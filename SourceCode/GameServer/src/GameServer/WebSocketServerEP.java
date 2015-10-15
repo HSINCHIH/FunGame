@@ -5,9 +5,10 @@
  */
 package GameServer;
 
+import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.Hashtable;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  *
@@ -56,8 +57,17 @@ public class WebSocketServerEP implements IBaseEP, IAcceptSocketCallBack {
     }
 
     @Override
-    public boolean Send(BaseMessage msg, EndPoint endPoint) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean Send(BaseMessage msg, EndPoint ep) {
+        try {
+            Socket remoteSocket = m_Sessions.get(ep.toString());
+            OutputStream outStream = remoteSocket.getOutputStream();
+            byte[] encodeByte = Encode(msg.GetBytes());
+            outStream.write(encodeByte);
+            return true;
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "Send", e.getMessage()));
+            return false;
+        }
     }
 
     @Override
@@ -86,4 +96,28 @@ public class WebSocketServerEP implements IBaseEP, IAcceptSocketCallBack {
         }
     }
 
+    private byte[] Encode(byte[] src) {
+        try {
+            byte[] sendBuf = null;
+            if (src.length < 126) {
+                sendBuf = new byte[src.length + 2];
+                sendBuf[0] = (byte) 0x81;
+                sendBuf[1] = (byte) src.length;
+                System.arraycopy(src, 0, sendBuf, 2, src.length);
+            } else if (src.length >= 126 && src.length < 0xFFFF) {
+                sendBuf = new byte[src.length + 4];
+                sendBuf[0] = (byte) 0x81;
+                sendBuf[1] = 126;
+                byte[] lengthArgs = ByteBuffer.allocate(2).putShort((short) src.length).array();
+                System.arraycopy(lengthArgs, 0, sendBuf, 2, lengthArgs.length);
+                System.arraycopy(src, 0, sendBuf, 4, src.length);
+            } else {
+                //UnHandle supper big data 
+            }
+            return sendBuf;
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "Encode", e.getMessage()));
+            return null;
+        }
+    }
 }

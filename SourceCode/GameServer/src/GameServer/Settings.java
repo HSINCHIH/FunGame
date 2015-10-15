@@ -10,5 +10,11 @@ package GameServer;
  * @author mark.chen
  */
 public class Settings {
+
     public static final int ServerPort = 99;
+    public static final String DB_Host = "192.168.7.93";
+    public static final int DB_Port = 3306;
+    public static final String DB_Name = "FUNGAME";
+    public static final String DB_USER = "root";
+    public static final String DB_PW = "cipherlab";
 }

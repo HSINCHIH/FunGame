@@ -10,5 +10,8 @@ package GameServer;
  * @author mark.chen
  */
 public class ServerAction {
-  public static final int DISCONNECTED = 0;
+
+    public static final int DISCONNECTED = 0;
+    public static final int PLSV_REGISTRY = 1;
+    public static final int SVPL_REGISTRY = 2;
 }

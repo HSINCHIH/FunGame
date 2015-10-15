@@ -28,7 +28,7 @@ public class BaseMessage {
         for (String arg : Args) {
             SB.append(String.format("%s;", arg));
         }
-        return SB.toString().substring(0, SB.length());
+        return SB.toString().substring(0, SB.length() - 1);
     }
 
     public byte[] GetBytes() {

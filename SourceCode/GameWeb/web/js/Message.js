@@ -25,5 +25,5 @@ Message.prototype =
             {
                 this.Args = new Array();
             }
-        }
+        };
 

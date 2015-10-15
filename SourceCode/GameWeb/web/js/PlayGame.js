@@ -8,6 +8,8 @@ function PlayGame() {
 PlayGame.prototype = {
     m_Socket: null,
     m_IsConnect: false,
+    m_PlayerName: "",
+    m_PlayerNum: "",
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -23,9 +25,23 @@ PlayGame.prototype = {
             {
                 if (recvMsg.Args[0] === "0")
                 {
-                    $("#LB_SignUp_MSG").text("signup fail, please try another user name and password");
+                    $("#LB_SignUp_MSG").text("Sign up fail, please try another user name and password");
+                    return;
                 }
-                $("#LB_SignUp_MSG").text("signup success, now you can login the game");
+                $("#LB_SignUp_MSG").text("Sign up success, now you can login the game");
+            }
+            case ServerAction.SVPL_LOGIN:
+            {
+                if (recvMsg.Args[0] === "0")
+                {
+                    $("#LB_Login_MSG").text("Login fail, please try again!!");
+                    return;
+                }
+                this.m_PlayerNum = recvMsg.Args[1];
+                this.m_PlayerName = $("#TB_Login_ID").val();
+                $("#LB_Login_MSG").text("Login success!!");
+                $("#LB_PLAYER").text("Player : " + this.m_PlayerName);
+                $("#DLG_Login").modal("toggle");
             }
         }
     },
@@ -95,12 +111,18 @@ PlayGame.prototype = {
         var name = $("#TB_Login_ID").val();
         var pw = $("#TB_Login_PW").val();
         var rememberMe = $("#CKB_RememberMe").prop("checked");
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_LOGIN;
+        newMsg.Args.push(name);
+        newMsg.Args.push(pw);
+        this.Send(newMsg);
     },
     OnSignUpClick: function ()
     {
         //Reset sign form
         $("#TB_SignUp_ID").val("");
         $("#TB_SignUp_PW").val("");
+        $("#LB_SignUp_MSG").text("");
         $("#BT_SignUp").prop('disabled', false);
         //Toggle form
         $("#DLG_SignUp").modal("toggle");
@@ -110,8 +132,9 @@ PlayGame.prototype = {
         //Reset login form
         $("#TB_Login_ID").val("");
         $("#TB_Login_PW").val("");
-        $("#BT_Login").prop('disabled', false);
         $("#CKB_RememberMe").prop("checked", false);
+        $("#LB_Login_MSG").text("");
+        $("#BT_Login").prop('disabled', false);
         //Toggle form
         $("#DLG_Login").modal("toggle");
     },

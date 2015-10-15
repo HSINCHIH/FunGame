@@ -34,6 +34,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_REGISTRY_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_LOGIN: {
+                PLSV_LOGIN_recv(msg, ep);
+            }
+            break;
             default: {
             }
             break;
@@ -93,21 +97,34 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_Log.Writeln(String.format("%s %s fail, name : %s", "PLSV_REGISTRY_recv", "Insert", name));
                 return;
             }
+            newMsg.Args.add("1");
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_REGISTRY_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_LOGIN_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String name = msg.Args.get(0);
+            String pw = msg.Args.get(1);
+            String sql = "";
             //Get PlayerNum
             sql = String.format("SELECT `PlayerNum` FROM `Player` WHERE `PlayerName`='%s' AND `PlayerPW`='%s';", name, pw);
-            rs = m_DBHandler.ExecuteQuery(sql);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_LOGIN;
             if (rs.size() <= 0) {
-                //Select fail
                 newMsg.Args.add("0");
                 m_LocalControlEP.Send(newMsg, ep);
-                m_Log.Writeln(String.format("%s %s fail, name : %s", "PLSV_REGISTRY_recv", "Select", name));
+                m_Log.Writeln(String.format("%s %s fail, name : %s, pw : %s", "PLSV_REGISTRY_recv", "Select", name, pw));
                 return;
             }
             newMsg.Args.add("1");
             newMsg.Args.add(rs.get(0)[0]);
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
-            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_REGISTRY_recv", e.getMessage()));
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_LOGIN_recv", e.getMessage()));
         }
     }
 }

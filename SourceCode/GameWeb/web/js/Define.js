@@ -9,7 +9,9 @@ var ServerAction =
         {
             DISCONNECTED: 0,
             PLSV_REGISTRY: 1,
-            SVPL_REGISTRY: 2
+            SVPL_REGISTRY: 2,
+            PLSV_LOGIN: 3,
+            SVPL_LOGIN: 4
         };
 
 

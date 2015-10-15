@@ -1,0 +1,13 @@
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Dd]ist/
+[Cc]lasses/
+[Bb]uild/
+*.suo
+*.user
+*.ncb
+*.7z
+*.rar
+*.zip

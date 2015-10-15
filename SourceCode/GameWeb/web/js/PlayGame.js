@@ -42,6 +42,7 @@ PlayGame.prototype = {
                 $("#LB_Login_MSG").text("Login success!!");
                 $("#LB_PLAYER").text("Player : " + this.m_PlayerName);
                 $("#DLG_Login").modal("toggle");
+                this.ShowWelcome(this.m_PlayerName);
             }
         }
     },
@@ -137,6 +138,11 @@ PlayGame.prototype = {
         $("#BT_Login").prop('disabled', false);
         //Toggle form
         $("#DLG_Login").modal("toggle");
+    },
+    ShowWelcome: function (name)
+    {
+        $("#DLG_Welcome").modal("toggle");
+        $("#LB_Welcome_MSG").text("Welcome back " + name);
     },
     Init: function () {
         this.CreateMap();

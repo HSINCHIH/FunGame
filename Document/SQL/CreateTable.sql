@@ -32,8 +32,9 @@ ENGINE=InnoDB
 `StartTime` TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL COMMENT '開始時間' ,
 `StopTime` TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL COMMENT '結束時間' ,
 `GameNum` INT(11) NOT NULL COMMENT '遊戲種類' ,
+`CreateBy` INT(11) NOT NULL COMMENT '建立者' ,
 `Winner` INT(11) NOT NULL DEFAULT '-1' COMMENT '贏家(-1:沒贏家)' ,
-`Enable` INT(11) NOT NULL DEFAULT 1 COMMENT '1:啟用,0:不啟用' ,
+`RoomState` INT(11) NOT NULL DEFAULT 1 COMMENT '0:不啟用,1:啟用,2:遊戲中,3:結束' ,
 PRIMARY KEY (`RoomNum`)
 )
 COLLATE='utf8_unicode_ci'

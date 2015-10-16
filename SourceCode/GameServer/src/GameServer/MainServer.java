@@ -38,6 +38,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_LOGIN_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_CREATE_ROOM: {
+                PLSV_CREATE_ROOM_recv(msg, ep);
+            }
+            break;
             default: {
             }
             break;
@@ -125,6 +129,47 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_LOGIN_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_CREATE_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String roomName = msg.Args.get(1);
+            String roomPW = msg.Args.get(2);
+            String description = msg.Args.get(3);
+            String sql = "";
+            //Check if name is exist or not
+            sql = String.format("SELECT * FROM `Room` WHERE `RoomName`='%s';", roomName);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_CREATE_ROOM;
+            if (rs.size() > 0) {
+                //RoomName already in use
+                newMsg.Args.add("0");
+                m_LocalControlEP.Send(newMsg, ep);
+            }
+            sql = String.format("INSERT INTO `Room` (`RoomName`, `RoomPW`,`Description`,`StartTime`, `GameNum`, `CreateBy`) VALUES ('%s', '%s', '%s', %s, %s, %s);", roomName, roomPW, description, "CURRENT_TIMESTAMP()", "1", playerNum);
+            if (m_DBHandler.Execute(sql) <= 0) {
+                //Insert fail
+                newMsg.Args.add("0");
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s %s fail, roomName : %s", "PLSV_CREATE_ROOM_recv", "Insert", roomName));
+                return;
+            }
+            sql = String.format("SELECT `RoomNum` FROM `Room` WHERE `RoomName`='%s' AND `roomPW`='%s';", roomName, roomPW);
+            rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                newMsg.Args.add("0");
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s %s fail, roomName : %s, roomPW : %s", "PLSV_CREATE_ROOM_recv", "Select", roomName, roomPW));
+                return;
+            }
+            newMsg.Args.add("1");
+            newMsg.Args.add(rs.get(0)[0]);
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_CREATE_ROOM_recv", e.getMessage()));
         }
     }
 }

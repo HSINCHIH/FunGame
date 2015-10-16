@@ -8,8 +8,11 @@ function PlayGame() {
 PlayGame.prototype = {
     m_Socket: null,
     m_IsConnect: false,
+    m_IsLogin: false,
     m_PlayerName: "",
     m_PlayerNum: "",
+    m_RoomName: "",
+    m_RoomNum: "",
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -22,28 +25,47 @@ PlayGame.prototype = {
         switch (recvMsg.Action)
         {
             case ServerAction.SVPL_REGISTRY:
-            {
-                if (recvMsg.Args[0] === "0")
                 {
-                    $("#LB_SignUp_MSG").text("Sign up fail, please try another user name and password");
-                    return;
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        this.ShowSignUpMsg(MessageLevel.Danger, "Sign up fail, please try another user name and password");
+                        return;
+                    }
+                    this.ShowSignUpMsg(MessageLevel.Success, "Sign up success, now you can login the game");
                 }
-                $("#LB_SignUp_MSG").text("Sign up success, now you can login the game");
-            }
+                break;
             case ServerAction.SVPL_LOGIN:
-            {
-                if (recvMsg.Args[0] === "0")
                 {
-                    $("#LB_Login_MSG").text("Login fail, please try again!!");
-                    return;
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        this.ShowLoginMsg(MessageLevel.Danger, "Login fail, please try again!!");
+                        return;
+                    }
+                    this.m_PlayerNum = recvMsg.Args[1];
+                    this.m_PlayerName = $("#TB_Login_ID").val();
+                    this.ShowLoginMsg(MessageLevel.Success, "Login success!!");
+                    this.ShowPlayer(this.m_PlayerName);
+                    this.m_IsLogin = true;
+                    $("#DLG_Login").modal("toggle");
+                    this.ShowWelcome(this.m_PlayerName);
                 }
-                this.m_PlayerNum = recvMsg.Args[1];
-                this.m_PlayerName = $("#TB_Login_ID").val();
-                $("#LB_Login_MSG").text("Login success!!");
-                $("#LB_PLAYER").text("Player : " + this.m_PlayerName);
-                $("#DLG_Login").modal("toggle");
-                this.ShowWelcome(this.m_PlayerName);
-            }
+                break;
+            case ServerAction.SVPL_CREATE_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        this.ShowCreateRoomMsg(MessageLevel.Danger, "Create room fail, please try again!!");
+                        return;
+                    }
+                    this.ShowCreateRoomMsg(MessageLevel.Success, "Create room success");
+                    this.m_RoomName = $("#TB_Create_Room_Name").val();
+                    this.m_RoomNum = recvMsg.Args[1];
+                    this.ShowRoom(this.m_RoomName);
+                    //Toggle form
+                    $("#DLG_Create_Room").modal("toggle");
+                    $("#DLG_Room_Host").modal("toggle");
+                }
+                break;
         }
     },
     OnError: function (event)
@@ -82,11 +104,12 @@ PlayGame.prototype = {
         }
         for (var i = 0; i < imgList.length; i++)
         {
-            $('#gameDiv').append("<div class=\"col-md-3 col-xs-3\"><img src=\"images/" + imgList[i] + ".png\" alt=\"\" class=\"img-responsive\"/></div>");
+            $('#gameDiv').append('<div class="col-md-3 col-xs-3"><img src="images/' + imgList[i] + '.png" alt="" class="img-responsive"/></div>');
         }
     },
     SingUp: function ()
     {
+        //Disable button
         $("#BT_SignUp").prop('disabled', true);
         if (!this.m_IsConnect)
         {
@@ -101,8 +124,24 @@ PlayGame.prototype = {
         newMsg.Args.push(pw);
         this.Send(newMsg);
     },
+    ShowSignUpMsg: function (level, msg)
+    {
+        this.ShowMsg("LB_SignUp_MSG", level, msg);
+    },
+    OnSignUpClick: function ()
+    {
+        //Reset sign form
+        $("#TB_SignUp_ID").val("");
+        $("#TB_SignUp_PW").val("");
+        $("#LB_SignUp_MSG").text("");
+        $("#LB_SignUp_MSG").hide();
+        $("#BT_SignUp").prop('disabled', false);
+        //Toggle form
+        $("#DLG_SignUp").modal("toggle");
+    },
     Login: function ()
     {
+        //Disable button
         $("#BT_Login").prop('disabled', true);
         if (!this.m_IsConnect)
         {
@@ -118,15 +157,45 @@ PlayGame.prototype = {
         newMsg.Args.push(pw);
         this.Send(newMsg);
     },
-    OnSignUpClick: function ()
+    ShowMsg: function (item, level, msg)
     {
-        //Reset sign form
-        $("#TB_SignUp_ID").val("");
-        $("#TB_SignUp_PW").val("");
-        $("#LB_SignUp_MSG").text("");
-        $("#BT_SignUp").prop('disabled', false);
-        //Toggle form
-        $("#DLG_SignUp").modal("toggle");
+        var selectItem = $("#" + item);
+        selectItem.show();
+        selectItem.removeClass();
+        selectItem.addClass("alert");
+        switch (level)
+        {
+            case MessageLevel.Info:
+                {
+                    selectItem.addClass("alert-info");
+                }
+                break;
+            case MessageLevel.Danger:
+                {
+                    selectItem.addClass("alert-danger");
+                }
+                break;
+            case MessageLevel.Warning:
+                {
+                    selectItem.addClass("alert-warning");
+                }
+                break;
+            case MessageLevel.Success:
+                {
+                    selectItem.addClass("alert-success");
+                }
+                break;
+            case MessageLevel.Info:
+                {
+                    selectItem.addClass("alert-info");
+                }
+                break;
+        }
+        selectItem.text(msg);
+    },
+    ShowLoginMsg: function (level, msg)
+    {
+        this.ShowMsg("LB_Login_MSG", level, msg);
     },
     OnLoginClick: function ()
     {
@@ -135,14 +204,62 @@ PlayGame.prototype = {
         $("#TB_Login_PW").val("");
         $("#CKB_RememberMe").prop("checked", false);
         $("#LB_Login_MSG").text("");
+        $("#LB_Login_MSG").hide();
         $("#BT_Login").prop('disabled', false);
         //Toggle form
         $("#DLG_Login").modal("toggle");
+    },
+    OnCreateRoomClick: function ()
+    {
+        //Reset create room modal
+        $("#TB_Create_Room_Name").val("");
+        $("#TB_Create_Room_PW").val("");
+        $("#TB_Create_Room_Description").val("");
+        $("#LB_Create_Room_MSG").text("");
+        $("#LB_Create_Room_MSG").hide();
+        $("#BT_Create_Room_Create").prop('disabled', false);
+        //Toggle form
+        $("#DLG_Create_Room").modal("toggle");
+    },
+    OnCreateRoomCreateClick: function ()
+    {
+        //Disable button
+        $("#BT_Create_Room_Create").prop('disabled', true);
+        var roomName = $("#TB_Create_Room_Name").val();
+        var roomPW = $("#TB_Create_Room_PW").val();
+        var description = $("#TB_Create_Room_Description").val();
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_CREATE_ROOM;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(roomName);
+        newMsg.Args.push(roomPW);
+        newMsg.Args.push(description);
+        this.Send(newMsg);
+    },
+    ShowCreateRoomMsg: function (level, msg)
+    {
+        this.ShowMsg("LB_Create_Room_MSG", level, msg);
+    },
+    OnRoomHostStartClick: function ()
+    {
+        $("#LT_Room_Host_List").append('<li class="list-group-item disabled">Apples</li>');
+    },
+    OnRoomHostCancelClick: function ()
+    {
+        $("#LT_Room_Host_List").empty();
     },
     ShowWelcome: function (name)
     {
         $("#DLG_Welcome").modal("toggle");
         $("#LB_Welcome_MSG").text("Welcome back " + name);
+    },
+    ShowPlayer: function (playerName)
+    {
+        $("#LB_PLAYER").text("Player : " + playerName);
+    },
+    ShowRoom: function (roomName)
+    {
+        $("#LB_ROOM").text("Room : " + roomName);
     },
     Init: function () {
         this.CreateMap();

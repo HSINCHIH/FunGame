@@ -16,4 +16,7 @@ public class ServerAction {
     public static final int SVPL_REGISTRY = 2;
     public static final int PLSV_LOGIN = 3;
     public static final int SVPL_LOGIN = 4;
+    public static final int PLSV_CREATE_ROOM = 5;
+    public static final int SVPL_CREATE_ROOM = 6;
+
 }

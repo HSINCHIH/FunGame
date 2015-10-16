@@ -1,0 +1,13 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 2015/10/16, 上午 10:01:27
+    Author     : mark.chen
+*/
+.modal .modal-body {
+    max-height: 320px;
+    overflow-y: auto;
+}

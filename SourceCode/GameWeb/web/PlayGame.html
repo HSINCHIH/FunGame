@@ -11,6 +11,7 @@ and open the template in the editor.
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
         <link href="css/bootstrap-theme.min.css" rel="stylesheet" type="text/css"/>
+        <link href="css/PlayGame.css" rel="stylesheet" type="text/css"/>
         <script>
             var game = null;
             function OnMyLoad()
@@ -40,7 +41,13 @@ and open the template in the editor.
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
                                 <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
-                                <li><a href="#">Game Room</a></li>
+                                <li class="dropdown">
+                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Game Room <span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="#" onclick="game.OnCreateRoomClick()">Create</a></li>
+                                        <li><a href="#">Join</a></li>
+                                    </ul>
+                                </li>
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick="game.OnSignUpClick()"><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
@@ -67,8 +74,7 @@ and open the template in the editor.
                     <p class="text-right">&copy; copyright 2015 by PDDIII Mark.Chen</p>
                 </div>
             </div> 
-
-            <div class="modal fade" id="DLG_SignUp">
+            <div class="modal fade" id="DLG_SignUp"><!-- SinUp-->
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -82,7 +88,7 @@ and open the template in the editor.
                                     <input type="password" class="form-control" id="TB_SignUp_PW"/>
                                 </div>
                                 <div class="form-group">
-                                    <p class="text-center" id="LB_SignUp_MSG"></p>
+                                    <div class="alert" role="alert" id="LB_SignUp_MSG"></div>
                                 </div>
                                 <div class="form-group">
                                     <input type="button" class="btn btn-default" id="BT_SignUp" value="Sign Up" onclick="game.SingUp()" />
@@ -92,7 +98,7 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- SinUp-->
-            <div class="modal fade" id="DLG_Login">
+            <div class="modal fade" id="DLG_Login"><!-- Login-->
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -112,7 +118,7 @@ and open the template in the editor.
                                     </label>
                                 </div>
                                 <div class="form-group">
-                                    <p class="text-center" id="LB_Login_MSG"></p>
+                                    <div class="alert" role="alert" id="LB_Login_MSG"></div>
                                 </div>
                                 <div class="form-group">
                                     <input type="button" class="btn btn-default" id="BT_Login" value="Login" onclick="game.Login()"/>
@@ -122,7 +128,7 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Login-->
-            <div class="modal fade" id="DLG_Welcome">
+            <div class="modal fade" id="DLG_Welcome"><!-- Welcome-->
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -135,6 +141,59 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Welcome-->
+            <div class="modal fade" id="DLG_Create_Room"><!-- Create Room-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <form action="" method="">
+                                <div class="form-group">
+                                    <label for="TB_Create_Room_Name">Room Name</label>
+                                    <input type="text" class="form-control" id="TB_Create_Room_Name"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="TB_Create_Room_PW">Password</label>
+                                    <input type="password" class="form-control" id="TB_Create_Room_PW"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="TB_Create_Room_Description">Description</label>
+                                    <input type="text" class="form-control" id="TB_Create_Room_Description"/>
+                                </div>
+                                <div class="form-group">
+                                    <div class="alert" role="alert" id="LB_Create_Room_MSG"></div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-group">
+                                <input type="button" class="btn btn-default" id="BT_Create_Room_Create" value="Create" onclick="game.OnCreateRoomCreateClick()"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- Create Room-->
+            <div class="modal fade" id="DLG_Room_Host"><!-- Room Host-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1>Game Room  <small id="LB_Room_Host_Name">MyGame</small></h1>
+                        </div>
+                        <div class="modal-body">
+                            <form action="" method="">
+                                <div class="form-group">
+                                    <ul class="list-group" id="LT_Room_Host_List">                               
+                                    </ul>
+                                </div>                             
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-group">
+                                <input type="button" class="btn btn-default" id="BT_Room_Host_Start" value="Start" onclick="game.OnRoomHostStartClick()" />
+                                <input type="button" class="btn btn-default" id="BT_Room_Host_Cancel" value="Cancel" onclick="game.OnRoomHostCancelClick()" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- Room Host-->
 
         </div>
         <!-- Bootstrap core JavaScript

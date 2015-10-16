@@ -20,4 +20,8 @@ public class ServerAction {
     public static final int SVPL_CREATE_ROOM = 6;
     public static final int PLSV_GET_ROOM_MEMBER = 7;
     public static final int SVPL_GET_ROOM_MEMBER = 8;
+    public static final int PLSV_GET_ENABLE_ROOM = 9;
+    public static final int SVPL_GET_ENABLE_ROOM = 10;
+    public static final int PLSV_JOIN_ROOM = 11;
+    public static final int SVPL_JOIN_ROOM = 12;
 }

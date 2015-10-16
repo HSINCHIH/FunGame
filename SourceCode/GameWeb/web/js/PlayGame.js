@@ -77,12 +77,40 @@ PlayGame.prototype = {
                 {
                     if (recvMsg.Args[0] === "0")
                     {
-                        console.log("SVPL_GET_ROOM_MEMBER faile");
+                        console.log("SVPL_GET_ROOM_MEMBER fail");
                         return;
                     }
                     this.ShowHostRoomList(recvMsg.Args[1]);
                 }
                 break;
+            case ServerAction.SVPL_GET_ENABLE_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_GET_ENABLE_ROOM fail");
+                        return;
+                    }
+                    this.ShowJoinRoomList(recvMsg.Args[1]);
+                }
+                break;
+            case ServerAction.SVPL_JOIN_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_JOIN_ROOM fail");
+                        return;
+                    }
+                    this.m_RoomNum = recvMsg.Args[1];
+                    this.m_RoomName = recvMsg.Args[2];
+                    this.ShowRoom(this.m_RoomName);
+                    //Toggle form
+                    $("#DLG_Join_Room").modal("toggle");
+                }
+                break
+            default:
+                {
+                }
+                break
         }
     },
     OnError: function (event)
@@ -288,8 +316,37 @@ PlayGame.prototype = {
         var args = rawData.split(/[,]/);
         for (var i = 0; i < args.length; i++)
         {
-            $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
+           $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
         }
+    },
+    OnJoinRoomClick: function ()
+    {
+        //Get room member
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_GET_ENABLE_ROOM;
+        newMsg.Args.push(this.m_PlayerNum);
+        this.Send(newMsg);
+        //Toggle form
+        $("#DLG_Join_Room").modal("toggle");
+    },
+    ShowJoinRoomList: function (rawData)
+    {
+        $("#LT_Join_Room_List").empty();
+        var roomList = eval(rawData);
+        for (var i = 0; i < roomList.length; i++)
+        {
+            $("#LT_Join_Room_List").append('<a href="#" class="list-group-item" onclick="game.OnJoinRoomJoinClick(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')">' + roomList[i].RoomName + '</a>');
+        }
+    },
+    OnJoinRoomJoinClick: function (roomNum, roomName)
+    {
+        //Join room
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_JOIN_ROOM;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(roomNum);
+        newMsg.Args.push(roomName);
+        this.Send(newMsg);
     },
     Init: function () {
         this.CreateMap();

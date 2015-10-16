@@ -45,7 +45,7 @@ and open the template in the editor.
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Game Room <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
                                         <li><a href="#" onclick="game.OnCreateRoomClick()">Create</a></li>
-                                        <li><a href="#">Join</a></li>
+                                        <li><a href="#" onclick="game.OnJoinRoomClick()">Join</a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -178,11 +178,11 @@ and open the template in the editor.
                             <h1>Game Room  <small id="LB_Room_Host_Name">MyGame</small></h1>
                         </div>
                         <div class="modal-body">
-                            <form action="" method="">
+                            <form action="" method="">    
                                 <div class="form-group">
                                     <ul class="list-group" id="LT_Room_Host_List">                               
                                     </ul>
-                                </div>                             
+                                </div>         
                             </form>
                         </div>
                         <div class="modal-footer">
@@ -194,6 +194,23 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Room Host-->
+            <div class="modal fade" id="DLG_Join_Room"><!-- Join room-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1>Available Room</h1>
+                        </div>
+                        <div class="modal-body">
+                            <form action="" method="">
+                                <div class="form-group">
+                                    <div class="list-group" id="LT_Join_Room_List">
+                                    </div>
+                                </div>                             
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- Join room-->
 
         </div>
         <!-- Bootstrap core JavaScript

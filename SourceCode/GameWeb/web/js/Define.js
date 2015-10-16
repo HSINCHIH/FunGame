@@ -21,8 +21,11 @@ var ServerAction =
             PLSV_CREATE_ROOM: 5,
             SVPL_CREATE_ROOM: 6,
             PLSV_GET_ROOM_MEMBER: 7,
-            SVPL_GET_ROOM_MEMBER: 8
-
+            SVPL_GET_ROOM_MEMBER: 8,
+            PLSV_GET_ENABLE_ROOM: 9,
+            SVPL_GET_ENABLE_ROOM: 10,
+            PLSV_JOIN_ROOM: 11,
+            SVPL_JOIN_ROOM: 12
         };
 
 

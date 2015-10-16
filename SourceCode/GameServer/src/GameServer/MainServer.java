@@ -46,6 +46,14 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_GET_ROOM_MEMBER_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_GET_ENABLE_ROOM: {
+                PLSV_GET_ENABLE_ROOM_recv(msg, ep);
+            }
+            break;
+            case ServerAction.PLSV_JOIN_ROOM: {
+                PLSV_JOIN_ROOM_recv(msg, ep);
+            }
+            break;
             default: {
             }
             break;
@@ -213,6 +221,50 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GET_ROOM_MEMBER_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_GET_ENABLE_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String sql = "";
+            sql = String.format("SELECT `RoomNum`,`RoomName` FROM `Room` WHERE `RoomState`=1;");
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_GET_ENABLE_ROOM;
+            StringBuilder sb = new StringBuilder();
+            newMsg.Args.add("1");//Success
+            for (String[] cols : rs) {
+                sb.append(String.format("{RoomNum:\"%s\",RoomName:\"%s\"},", cols[0], cols[1]));
+            }
+            newMsg.Args.add(String.format("[%s]", sb.toString().substring(0, sb.length() - 1)));
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GET_ENABLE_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_JOIN_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String roomNum = msg.Args.get(1);
+            String roomName = msg.Args.get(2);
+            String sql = String.format("UPDATE `Player` SET `RoomNum` = %s WHERE `PlayerNum` = %s;", roomNum, playerNum);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_JOIN_ROOM;
+            if (m_DBHandler.Execute(sql) <= 0) {
+                //Update fail
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(roomNum);
+            newMsg.Args.add(roomName);
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_JOIN_ROOM_recv", e.getMessage()));
         }
     }
 }

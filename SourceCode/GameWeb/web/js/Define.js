@@ -19,7 +19,10 @@ var ServerAction =
             PLSV_LOGIN: 3,
             SVPL_LOGIN: 4,
             PLSV_CREATE_ROOM: 5,
-            SVPL_CREATE_ROOM: 6
+            SVPL_CREATE_ROOM: 6,
+            PLSV_GET_ROOM_MEMBER: 7,
+            SVPL_GET_ROOM_MEMBER: 8
+
         };
 
 

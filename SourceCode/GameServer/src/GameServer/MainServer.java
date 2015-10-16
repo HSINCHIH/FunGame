@@ -42,6 +42,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_CREATE_ROOM_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_GET_ROOM_MEMBER: {
+                PLSV_GET_ROOM_MEMBER_recv(msg, ep);
+            }
+            break;
             default: {
             }
             break;
@@ -90,15 +94,17 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Action = ServerAction.SVPL_REGISTRY;
             if (rs.size() > 0) {
                 //name already in use
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_REGISTRY_recv", sql));
+                return;
             }
             sql = String.format("INSERT INTO `Player` (`PlayerName`, `PlayerPW`) VALUES ('%s', '%s');", name, pw);
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Insert fail
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
-                m_Log.Writeln(String.format("%s %s fail, name : %s", "PLSV_REGISTRY_recv", "Insert", name));
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_REGISTRY_recv", sql));
                 return;
             }
             newMsg.Args.add("1");
@@ -119,12 +125,12 @@ public class MainServer implements IReceiveMsgCallBack {
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_LOGIN;
             if (rs.size() <= 0) {
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
-                m_Log.Writeln(String.format("%s %s fail, name : %s, pw : %s", "PLSV_REGISTRY_recv", "Select", name, pw));
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_LOGIN_recv", sql));
                 return;
             }
-            newMsg.Args.add("1");
+            newMsg.Args.add("1");//Success
             newMsg.Args.add(rs.get(0)[0]);
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
@@ -146,30 +152,67 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Action = ServerAction.SVPL_CREATE_ROOM;
             if (rs.size() > 0) {
                 //RoomName already in use
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
+                return;
             }
             sql = String.format("INSERT INTO `Room` (`RoomName`, `RoomPW`,`Description`,`StartTime`, `GameNum`, `CreateBy`) VALUES ('%s', '%s', '%s', %s, %s, %s);", roomName, roomPW, description, "CURRENT_TIMESTAMP()", "1", playerNum);
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Insert fail
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
-                m_Log.Writeln(String.format("%s %s fail, roomName : %s", "PLSV_CREATE_ROOM_recv", "Insert", roomName));
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_CREATE_ROOM_recv", sql));
                 return;
             }
             sql = String.format("SELECT `RoomNum` FROM `Room` WHERE `RoomName`='%s' AND `roomPW`='%s';", roomName, roomPW);
             rs = m_DBHandler.ExecuteQuery(sql);
             if (rs.size() <= 0) {
-                newMsg.Args.add("0");
+                newMsg.Args.add("0");//Fail
                 m_LocalControlEP.Send(newMsg, ep);
-                m_Log.Writeln(String.format("%s %s fail, roomName : %s, roomPW : %s", "PLSV_CREATE_ROOM_recv", "Select", roomName, roomPW));
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_CREATE_ROOM_recv", sql));
                 return;
             }
-            newMsg.Args.add("1");
+            String roomNum = rs.get(0)[0];
+            sql = String.format("UPDATE `Player` SET `RoomNum` = %s WHERE `PlayerNum` = %s;", roomNum, playerNum);
+            if (m_DBHandler.Execute(sql) <= 0) {
+                //Update fail
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_CREATE_ROOM_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
             newMsg.Args.add(rs.get(0)[0]);
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_CREATE_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_GET_ROOM_MEMBER_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String roomNum = msg.Args.get(1);
+            String sql = "";
+            sql = String.format("SELECT `PlayerName` FROM `Player` WHERE `RoomNum`=%s;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
+            if (rs.size() <= 0) {
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_GET_ROOM_MEMBER_recv", sql));
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String[] cols : rs) {
+                sb.append(String.format("%s,", cols[0]));
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(sb.substring(0, sb.length() - 1));
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GET_ROOM_MEMBER_recv", e.getMessage()));
         }
     }
 }

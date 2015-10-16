@@ -61,9 +61,26 @@ PlayGame.prototype = {
                     this.m_RoomName = $("#TB_Create_Room_Name").val();
                     this.m_RoomNum = recvMsg.Args[1];
                     this.ShowRoom(this.m_RoomName);
+                    this.ShowHostRoomName(this.m_RoomName);
+                    //Get room member
+                    var newMsg = new Message();
+                    newMsg.Action = ServerAction.PLSV_GET_ROOM_MEMBER;
+                    newMsg.Args.push(this.m_PlayerNum);
+                    newMsg.Args.push(this.m_RoomNum);
+                    this.Send(newMsg);
                     //Toggle form
                     $("#DLG_Create_Room").modal("toggle");
                     $("#DLG_Room_Host").modal("toggle");
+                }
+                break;
+            case ServerAction.SVPL_GET_ROOM_MEMBER:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_GET_ROOM_MEMBER faile");
+                        return;
+                    }
+                    this.ShowHostRoomList(recvMsg.Args[1]);
                 }
                 break;
         }
@@ -260,6 +277,19 @@ PlayGame.prototype = {
     ShowRoom: function (roomName)
     {
         $("#LB_ROOM").text("Room : " + roomName);
+    },
+    ShowHostRoomName: function (roomName)
+    {
+        $("#LB_Room_Host_Name").text(roomName);
+    },
+    ShowHostRoomList: function (rawData)
+    {
+        $("#LT_Room_Host_List").empty();
+        var args = rawData.split(/[,]/);
+        for (var i = 0; i < args.length; i++)
+        {
+            $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
+        }
     },
     Init: function () {
         this.CreateMap();

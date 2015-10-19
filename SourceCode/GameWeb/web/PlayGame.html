@@ -18,6 +18,10 @@ and open the template in the editor.
             {
                 game = new PlayGame();
                 game.Init();
+                //For flip effect
+                $('.flip').click(function () {
+                    $(this).find('.card').toggleClass('flipped');
+                });
             }
         </script>
     </head>
@@ -40,7 +44,7 @@ and open the template in the editor.
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
-                                <li class="active"><a href="#">Home <span class="sr-only">(current)</span></a></li>
+                                <li class="active"><a href="#">Home <span class="sr-only" >(current)</span></a></li>
                                 <li class="dropdown">
                                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Game Room <span class="caret"></span></a>
                                     <ul class="dropdown-menu">
@@ -68,6 +72,182 @@ and open the template in the editor.
                 </div>
             </div> 
             <div class="row" id="gameDiv">
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt=""  class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card1" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card2" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card3" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card4" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card5" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card6" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card7" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card8" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card9" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card10" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card11" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card12" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card13" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card14" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card15" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3"><div class="flip">
+                        <div class="card" >
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="card16" class="img-responsive"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div> 
             <div class="row">
                 <div class="col-md-12">

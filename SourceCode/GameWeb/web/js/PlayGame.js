@@ -149,7 +149,7 @@ PlayGame.prototype = {
         }
         for (var i = 0; i < imgList.length; i++)
         {
-            $('#gameDiv').append('<div class="col-md-3 col-xs-3"><img src="images/' + imgList[i] + '.png" alt="" class="img-responsive"/></div>');
+            $("#card" + (i + 1)).attr("src", "images/" + imgList[i] + ".png");
         }
     },
     SingUp: function ()
@@ -316,7 +316,7 @@ PlayGame.prototype = {
         var args = rawData.split(/[,]/);
         for (var i = 0; i < args.length; i++)
         {
-           $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
+            $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
         }
     },
     OnJoinRoomClick: function ()

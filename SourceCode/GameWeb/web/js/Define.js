@@ -25,7 +25,15 @@ var ServerAction =
             PLSV_GET_ENABLE_ROOM: 9,
             SVPL_GET_ENABLE_ROOM: 10,
             PLSV_JOIN_ROOM: 11,
-            SVPL_JOIN_ROOM: 12
+            SVPL_JOIN_ROOM: 12,
+            PLSV_INITIAL_GAME: 13,
+            SVPL_INITIAL_GAME: 14,
+            SVPL_SETUP_GAME: 15,
+            PLSV_GET_IMAGE: 16,
+            SVPL_GET_IMAGE: 17,
+            PLSV_GAME_READY: 18,
+            SVPL_GAME_READY: 19,
+            SVPL_GAME_START: 20
         };
 
 

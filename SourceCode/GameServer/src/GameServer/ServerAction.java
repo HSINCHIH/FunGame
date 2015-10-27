@@ -24,4 +24,13 @@ public class ServerAction {
     public static final int SVPL_GET_ENABLE_ROOM = 10;
     public static final int PLSV_JOIN_ROOM = 11;
     public static final int SVPL_JOIN_ROOM = 12;
+    public static final int PLSV_INITIAL_GAME = 13;
+    public static final int SVPL_INITIAL_GAME = 14;
+    public static final int SVPL_SETUP_GAME = 15;
+    public static final int PLSV_GET_IMAGE = 16;
+    public static final int SVPL_GET_IMAGE = 17;
+    public static final int PLSV_GAME_READY = 18;
+    public static final int SVPL_GAME_READY = 19;
+    public static final int SVPL_GAME_START = 20;
+
 }

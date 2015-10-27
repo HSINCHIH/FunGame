@@ -13,6 +13,7 @@ PlayGame.prototype = {
     m_PlayerNum: "",
     m_RoomName: "",
     m_RoomNum: "",
+    m_GameSettings: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -106,11 +107,58 @@ PlayGame.prototype = {
                     //Toggle form
                     $("#DLG_Join_Room").modal("toggle");
                 }
-                break
+                break;
+            case ServerAction.SVPL_INITIAL_GAME:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_INITIAL_GAME fail");
+                        return;
+                    }
+                }
+                break;
+            case ServerAction.SVPL_SETUP_GAME:
+                {
+                    var newMsg = new Message();
+                    newMsg.Action = ServerAction.PLSV_GET_IMAGE;
+                    newMsg.Args.push(this.m_PlayerNum);
+                    newMsg.Args.push(this.m_RoomNum);
+                    this.Send(newMsg);
+                }
+                break;
+            case ServerAction.SVPL_GET_IMAGE:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_GET_IMAGE fail");
+                        return;
+                    }
+                    this.ApplySetting(recvMsg.Args[1]);
+                    $("#DLG_Room_Host").modal("toggle");
+                }
+                break;
+            case ServerAction.SVPL_GAME_READY:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_GAME_READY fail");
+                        return;
+                    }
+                }
+                break;
+                 case ServerAction.SVPL_GAME_START:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_GAME_START fail");
+                        return;
+                    }
+                }
+                break;
             default:
                 {
                 }
-                break
+                break;
         }
     },
     OnError: function (event)
@@ -152,13 +200,27 @@ PlayGame.prototype = {
             $("#card" + (i + 1)).attr("src", "images/" + imgList[i] + ".png");
         }
     },
+    ApplySetting: function (jsonString)
+    {
+        this.m_GameSettings = eval(jsonString);
+        for (var i = 0; i < 16; i++)
+        {
+            var img = this.m_GameSettings[i].Img;
+            $("#card" + (i + 1)).attr("src", "images/0" + img + ".png");
+        }
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_GAME_READY;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(this.m_RoomNum);
+        this.Send(newMsg);
+    },
     SingUp: function ()
     {
         //Disable button
         $("#BT_SignUp").prop('disabled', true);
         if (!this.m_IsConnect)
         {
-            console.log("Socket no connect ");
+            console.log("Socket no connect");
             return;
         }
         var name = $("#TB_SignUp_ID").val();
@@ -287,7 +349,12 @@ PlayGame.prototype = {
     },
     OnRoomHostStartClick: function ()
     {
-        $("#LT_Room_Host_List").append('<li class="list-group-item disabled">Apples</li>');
+        //$("#LT_Room_Host_List").append('<li class="list-group-item disabled">Apples</li>');
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_INITIAL_GAME;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(this.m_RoomNum);
+        this.Send(newMsg);
     },
     OnRoomHostCancelClick: function ()
     {

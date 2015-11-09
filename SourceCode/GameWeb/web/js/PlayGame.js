@@ -14,6 +14,8 @@ PlayGame.prototype = {
     m_RoomName: "",
     m_RoomNum: "",
     m_GameSettings: null,
+    m_ClickInterval: 500,
+    m_PrevClickTick: 0,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -146,7 +148,7 @@ PlayGame.prototype = {
                     }
                 }
                 break;
-                 case ServerAction.SVPL_GAME_START:
+            case ServerAction.SVPL_GAME_START:
                 {
                     if (recvMsg.Args[0] === "0")
                     {
@@ -193,11 +195,21 @@ PlayGame.prototype = {
         var imgList = [];
         for (var i = 0; i < 16; i++)
         {
-            imgList.push("0" + (i % 8 + 1));
+            if ((i % 8 + 1) < 10)
+            {
+                imgList.push("0" + (i % 8 + 1));
+            }
+            else
+            {
+                imgList.push((i % 8 + 1));
+            }
         }
         for (var i = 0; i < imgList.length; i++)
         {
-            $("#card" + (i + 1)).attr("src", "images/" + imgList[i] + ".png");
+            if (i < 10)
+                $("#image0" + (i + 1)).attr("src", "images/" + imgList[i] + ".png");
+            else
+                $("#image" + (i + 1)).attr("src", "images/" + imgList[i] + ".png");
         }
     },
     ApplySetting: function (jsonString)
@@ -206,7 +218,7 @@ PlayGame.prototype = {
         for (var i = 0; i < 16; i++)
         {
             var img = this.m_GameSettings[i].Img;
-            $("#card" + (i + 1)).attr("src", "images/0" + img + ".png");
+            $("#image" + (i + 1)).attr("src", "images/0" + img + ".png");
         }
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_GAME_READY;
@@ -414,6 +426,31 @@ PlayGame.prototype = {
         newMsg.Args.push(roomNum);
         newMsg.Args.push(roomName);
         this.Send(newMsg);
+    },
+    m_test: 0,
+    OnImageClick: function (id)
+    {
+        console.log("OnImageClick");
+        var curTick = (new Date()).getTime();
+        console.log(curTick - this.m_PrevClickTick);
+        if (curTick - this.m_PrevClickTick < this.m_ClickInterval)
+        {
+            console.log("return");
+            return;
+        }
+        console.log("run");
+        if (this.m_test % 2 === 0)
+        {
+            $("#" + id).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+            $("#" + id).closest('.card').css('transform', 'rotatey(-180deg)');
+        } 
+        else
+        {
+            $("#" + id).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+            $("#" + id).closest('.card').css('transform', 'rotatey(0deg)');
+        }
+        this.m_test++;
+        this.m_PrevClickTick = curTick;
     },
     Init: function () {
         this.CreateMap();

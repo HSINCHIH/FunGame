@@ -337,7 +337,7 @@ public class MainServer implements IReceiveMsgCallBack {
         int orderIndex = 0;
         while (!cloneTemp.isEmpty()) {
             int itemIndex = (int) (Math.random() * cloneTemp.size());
-            sb.append(String.format("\"%d\":{\"Img\":\"%d\",\"Open\":0,\"Click\":0},", orderIndex, cloneTemp.get(itemIndex)));
+            sb.append(String.format("\"%02d\":{\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, cloneTemp.get(itemIndex)));
             cloneTemp.remove(itemIndex);
             orderIndex++;
         }

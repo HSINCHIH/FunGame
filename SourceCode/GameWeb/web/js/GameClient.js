@@ -110,6 +110,18 @@ GameClient.prototype = {
                     this.CloseJoinRoomDialog();
                 }
                 break;
+            case ServerAction.SVPL_LEAVE_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_LEAVE_ROOM fail");
+                        return;
+                    }
+                    this.m_RoomNum = "";
+                    this.m_RoomName = "";
+                    this.ShowRoom("");
+                }
+                break;
             case ServerAction.SVPL_INITIAL_GAME:
                 {
                     if (recvMsg.Args[0] === "0")
@@ -440,6 +452,16 @@ GameClient.prototype = {
         newMsg.Args.push(this.m_PlayerNum);
         newMsg.Args.push(roomNum);
         newMsg.Args.push(roomName);
+        this.Send(newMsg);
+    },
+    LeaveRoom: function ()
+    {
+        //leave room
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_LEAVE_ROOM;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(this.m_RoomNum);
+        newMsg.Args.push(this.m_RoomName);
         this.Send(newMsg);
     },
     OnCardClick: function (id)

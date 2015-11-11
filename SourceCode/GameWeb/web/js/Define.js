@@ -26,14 +26,16 @@ var ServerAction =
             SVPL_GET_ENABLE_ROOM: 10,
             PLSV_JOIN_ROOM: 11,
             SVPL_JOIN_ROOM: 12,
-            PLSV_INITIAL_GAME: 13,
-            SVPL_INITIAL_GAME: 14,
-            SVPL_SETUP_GAME: 15,
-            PLSV_GET_IMAGE: 16,
-            SVPL_GET_IMAGE: 17,
-            PLSV_GAME_READY: 18,
-            SVPL_GAME_READY: 19,
-            SVPL_GAME_START: 20
+            PLSV_LEAVE_ROOM: 13,
+            SVPL_LEAVE_ROOM: 14,
+            PLSV_INITIAL_GAME: 15,
+            SVPL_INITIAL_GAME: 16,
+            SVPL_SETUP_GAME: 17,
+            PLSV_GET_IMAGE: 18,
+            SVPL_GET_IMAGE: 19,
+            PLSV_GAME_READY: 20,
+            SVPL_GAME_READY: 21,
+            SVPL_GAME_START: 22
         };
 
 

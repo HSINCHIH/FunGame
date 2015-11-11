@@ -56,6 +56,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_JOIN_ROOM_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_LEAVE_ROOM: {
+                PLSV_LEAVE_ROOM_recv(msg, ep);
+            }
+            break;
             case ServerAction.PLSV_INITIAL_GAME: {
                 PLSV_INITIAL_GAME_recv(msg, ep);
             }
@@ -295,7 +299,7 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
             EndPoint hostEP = new EndPoint(rs.get(0)[1]);
             //Get room players
-            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s;", roomNum);
+            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
             rs = m_DBHandler.ExecuteQuery(sql);
             if (rs.size() <= 0) {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
@@ -310,6 +314,52 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, hostEP);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_JOIN_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_LEAVE_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String roomNum = msg.Args.get(1);
+            String roomName = msg.Args.get(2);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_LEAVE_ROOM;
+            String sql = String.format("UPDATE `RoomPlayer` SET `Enable` = %d WHERE `PlayerNum` = %s AND `RoomNum` = %s;", 0, playerNum, roomNum);
+            if (m_DBHandler.Execute(sql) <= 0) {
+                //Insert fail
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_LEAVE_ROOM_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
+            m_LocalControlEP.Send(newMsg, ep);
+            //Get room host endpoint
+            sql = String.format("SELECT T1.PlayerName,T1.EndPoint FROM `Player` AS T1,`Room` AS T2 WHERE T2.RoomNum = %s AND T2.CreateBy = T1.PlayerNum ;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
+            EndPoint hostEP = new EndPoint(rs.get(0)[1]);
+            //Get room players
+            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
+            rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String[] cols : rs) {
+                sb.append(String.format("%s,", cols[0]));
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(sb.substring(0, sb.length() - 1));
+            m_LocalControlEP.Send(newMsg, hostEP);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_LEAVE_ROOM_recv", e.getMessage()));
         }
     }
 

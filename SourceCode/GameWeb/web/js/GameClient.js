@@ -218,7 +218,6 @@ GameClient.prototype = {
             return;
         }
         this.SetupCards(recvMsg.Args[1]);
-        this.CloseRoomHostDialog();
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_GAME_READY;
         newMsg.Args.push(this.m_PlayerNum);
@@ -383,6 +382,7 @@ GameClient.prototype = {
     },
     RoomHostStart: function ()
     {
+        this.CloseRoomHostDialog();
         //$("#LT_Room_Host_List").append('<li class="list-group-item disabled">Apples</li>');
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_INITIAL_GAME;
@@ -392,6 +392,7 @@ GameClient.prototype = {
     },
     RoomHostCancel: function ()
     {
+        this.CloseRoomHostDialog();
         $("#LT_Room_Host_List").empty();
     },
     ShowWelcome: function (name)

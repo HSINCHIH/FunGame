@@ -107,6 +107,11 @@ public class MainServer implements IReceiveMsgCallBack {
     }
 
     private void DISCONNECTED_recv(BaseMessage msg, EndPoint ep) {
+        String sql = String.format("UPDATE `Player` SET `Online` = %d WHERE `EndPoint` = '%s';", 0, ep.toString());
+        if (m_DBHandler.Execute(sql) <= 0) {
+            //Update fail
+            m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_LOGIN_recv", sql));
+        }
     }
 
     private void PLSV_REGISTRY_recv(BaseMessage msg, EndPoint ep) {
@@ -179,9 +184,8 @@ public class MainServer implements IReceiveMsgCallBack {
             String roomName = msg.Args.get(1);
             String roomPW = msg.Args.get(2);
             String description = msg.Args.get(3);
-            String sql = "";
             //Check if name is exist or not
-            sql = String.format("SELECT * FROM `Room` WHERE `RoomName`='%s';", roomName);
+            String sql = String.format("SELECT * FROM `Room` WHERE `RoomName`='%s';", roomName);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_CREATE_ROOM;
@@ -228,7 +232,7 @@ public class MainServer implements IReceiveMsgCallBack {
         try {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
-            String sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s;", roomNum);
+            String sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = 1 AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s;", roomNum);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
@@ -299,7 +303,7 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
             EndPoint hostEP = new EndPoint(rs.get(0)[1]);
             //Get room players
-            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
+            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = 1 AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
             rs = m_DBHandler.ExecuteQuery(sql);
             if (rs.size() <= 0) {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
@@ -345,7 +349,7 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
             EndPoint hostEP = new EndPoint(rs.get(0)[1]);
             //Get room players
-            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
+            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = 1 AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", roomNum, 1);
             rs = m_DBHandler.ExecuteQuery(sql);
             if (rs.size() <= 0) {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
@@ -377,7 +381,7 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_INITIAL_GAME_recv", sql));
                 return;
             }
-            sql = String.format("UPDATE `Room` SET `RoomState` = %d WHERE `RoomNum` = %s;", 2, roomNum);
+            sql = String.format("UPDATE `Room` SET `StartTime` = CURRENT_TIMESTAMP() , `RoomState` = %d WHERE `RoomNum` = %s;", 2, roomNum);
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Update fail
                 newMsg.Args.add("0");//Fail
@@ -470,7 +474,7 @@ public class MainServer implements IReceiveMsgCallBack {
             }
             newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GAME_START;
-            sql = String.format("SELECT T1.EndPoint FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = %d AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s;", 1, roomNum);
+            sql = String.format("SELECT T1.EndPoint FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = %d AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", 1, roomNum, 1);
             rs = m_DBHandler.ExecuteQuery(sql);
             for (String[] cols : rs) {
                 EndPoint sendEp = new EndPoint(cols[0]);

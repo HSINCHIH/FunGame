@@ -284,6 +284,30 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Args.add(roomNum);
             newMsg.Args.add(roomName);
             m_LocalControlEP.Send(newMsg, ep);
+            //Get room host endpoint
+            sql = String.format("SELECT T1.PlayerName,T1.EndPoint FROM `Player` AS T1,`Room` AS T2 WHERE T2.RoomNum = %s AND T2.CreateBy = T1.PlayerNum ;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_GET_ROOM_MEMBER;
+            EndPoint hostEP = new EndPoint(rs.get(0)[1]);
+            //Get room players
+            sql = String.format("SELECT T1.PlayerName FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s;", roomNum);
+            rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String[] cols : rs) {
+                sb.append(String.format("%s,", cols[0]));
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(sb.substring(0, sb.length() - 1));
+            m_LocalControlEP.Send(newMsg, hostEP);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_JOIN_ROOM_recv", e.getMessage()));
         }

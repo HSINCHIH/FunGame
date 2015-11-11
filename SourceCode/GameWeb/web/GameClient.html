@@ -398,13 +398,21 @@ and open the template in the editor.
                             <h1>Available Room</h1>
                         </div>
                         <div class="modal-body">
-                            <form action="" method="">
-                                <div class="form-group">
-                                    <div class="list-group" id="LT_Join_Room_List">
-                                    </div>
-                                </div>                             
-                            </form>
-                        </div>
+                            <table class="table" id="GRID_ROOM_LIST">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Password</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>      
+                                </tbody>
+                            </table>
+                            <div class="form-group">
+                                <div class="alert" role="alert" id="LB_JOIN_ROOM_MSG"></div>
+                            </div>
+                        </div>                          
                     </div>
                 </div>
             </div><!-- Join room-->

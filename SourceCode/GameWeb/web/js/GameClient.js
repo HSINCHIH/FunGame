@@ -102,11 +102,13 @@ GameClient.prototype = {
                     if (recvMsg.Args[0] === "0")
                     {
                         console.log("SVPL_JOIN_ROOM fail");
+                        this.ShowJoinRoomMsg(MessageLevel.Danger, "Join room fail, please try again");
                         return;
                     }
                     this.m_RoomNum = recvMsg.Args[1];
                     this.m_RoomName = recvMsg.Args[2];
                     this.ShowRoom(this.m_RoomName);
+                    this.ShowJoinRoomMsg(MessageLevel.Danger, "Join room success");
                     this.CloseJoinRoomDialog();
                 }
                 break;
@@ -420,6 +422,7 @@ GameClient.prototype = {
         {
             $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
         }
+
     },
     //join room
     OpenJoinRoomDialog: function ()
@@ -438,22 +441,28 @@ GameClient.prototype = {
     },
     ShowJoinRoomList: function (rawData)
     {
-        $("#LT_Join_Room_List").empty();
         var roomList = eval(rawData);
+        $('#GRID_ROOM_LIST tbody tr').remove();
         for (var i = 0; i < roomList.length; i++)
         {
-            $("#LT_Join_Room_List").append('<a href="#" class="list-group-item" onclick="client.OnJoinRoomJoinClick(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')">' + roomList[i].RoomName + '</a>');
+            $('#GRID_ROOM_LIST tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="password" id="TB_ROOM_' + roomList[i].RoomNum + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.OnJoinRoomJoinClick(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
         }
     },
     OnJoinRoomJoinClick: function (roomNum, roomName)
     {
+        var roomPW = $("#TB_ROOM_" + roomNum + "_PW").val();
         //Join room
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_JOIN_ROOM;
         newMsg.Args.push(this.m_PlayerNum);
         newMsg.Args.push(roomNum);
         newMsg.Args.push(roomName);
+        newMsg.Args.push(roomPW);
         this.Send(newMsg);
+    },
+    ShowJoinRoomMsg: function (level, msg)
+    {
+        this.ShowMsg("LB_JOIN_ROOM_MSG", level, msg);
     },
     LeaveRoom: function ()
     {

@@ -278,9 +278,28 @@ public class MainServer implements IReceiveMsgCallBack {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
             String roomName = msg.Args.get(2);
+            String roomPW = msg.Args.get(3);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_JOIN_ROOM;
-            String sql = String.format("INSERT INTO `RoomPlayer` (`PlayerNum`, `RoomNum`) VALUES (%s, %s);", playerNum, roomNum);
+            //Check room password
+            String sql = String.format("SELECT `RoomName` FROM `Room` WHERE `RoomNum` = %s AND `RoomPW` = '%s';", roomNum, roomPW);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            //Check if user already in room
+            sql = String.format("SELECT `MemberID` FROM `RoomPlayer` WHERE `PlayerNum` = %s AND `RoomNum` = %s AND `Enable` = %d;", playerNum, roomNum, 1);
+            rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() > 0) {
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
+                return;
+            }
+            sql = String.format("INSERT INTO `RoomPlayer` (`PlayerNum`, `RoomNum`) VALUES (%s, %s);", playerNum, roomNum);
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Insert fail
                 newMsg.Args.add("0");//Fail
@@ -294,7 +313,7 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
             //Get room host endpoint
             sql = String.format("SELECT T1.PlayerName,T1.EndPoint FROM `Player` AS T1,`Room` AS T2 WHERE T2.RoomNum = %s AND T2.CreateBy = T1.PlayerNum ;", roomNum);
-            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            rs = m_DBHandler.ExecuteQuery(sql);
             if (rs.size() <= 0) {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_JOIN_ROOM_recv", sql));
                 return;

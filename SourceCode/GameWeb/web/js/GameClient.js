@@ -18,6 +18,7 @@ GameClient.prototype = {
     m_PrevClickTick: 0,
     m_ClickCards: null,
     m_GameOver: 0,
+    m_CanClickCard: false,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -163,6 +164,7 @@ GameClient.prototype = {
                         console.log("SVPL_GAME_START fail");
                         return;
                     }
+                    this.OpenCountDownDialog();
                 }
                 break;
             default:
@@ -200,7 +202,7 @@ GameClient.prototype = {
     },
     CreateDefaultCards: function ()
     {
-        var jsonString = '({"10":{"Img":"07","Open":0,"Click":0},"11":{"Img":"06","Open":0,"Click":0},"12":{"Img":"04","Open":0,"Click":0},"13":{"Img":"03","Open":0,"Click":0},"14":{"Img":"07","Open":0,"Click":0},"15":{"Img":"03","Open":0,"Click":0},"16":{"Img":"01","Open":0,"Click":0},"01":{"Img":"08","Open":0,"Click":0},"02":{"Img":"06","Open":0,"Click":0},"03":{"Img":"01","Open":0,"Click":0},"04":{"Img":"04","Open":0,"Click":0},"05":{"Img":"05","Open":0,"Click":0},"06":{"Img":"02","Open":0,"Click":0},"07":{"Img":"08","Open":0,"Click":0},"08":{"Img":"05","Open":0,"Click":0},"09":{"Img":"02","Open":0,"Click":0}})';
+        var jsonString = '({"10":{"Img":"07","Open":0,"Click":0},"11":{"Img":"08","Open":0,"Click":0},"12":{"Img":"08","Open":0,"Click":0},"13":{"Img":"07","Open":0,"Click":0},"14":{"Img":"05","Open":0,"Click":0},"15":{"Img":"04","Open":0,"Click":0},"00":{"Img":"01","Open":0,"Click":0},"01":{"Img":"06","Open":0,"Click":0},"02":{"Img":"06","Open":0,"Click":0},"03":{"Img":"03","Open":0,"Click":0},"04":{"Img":"02","Open":0,"Click":0},"05":{"Img":"02","Open":0,"Click":0},"06":{"Img":"03","Open":0,"Click":0},"07":{"Img":"01","Open":0,"Click":0},"08":{"Img":"05","Open":0,"Click":0},"09":{"Img":"04","Open":0,"Click":0}})';
         this.SetupCards(jsonString);
     },
     SetupCards: function (jsonString)
@@ -445,10 +447,10 @@ GameClient.prototype = {
         $('#GRID_ROOM_LIST tbody tr').remove();
         for (var i = 0; i < roomList.length; i++)
         {
-            $('#GRID_ROOM_LIST tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="password" id="TB_ROOM_' + roomList[i].RoomNum + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.OnJoinRoomJoinClick(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
+            $('#GRID_ROOM_LIST tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="password" id="TB_ROOM_' + roomList[i].RoomNum + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.JoinRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
         }
     },
-    OnJoinRoomJoinClick: function (roomNum, roomName)
+    JoinRoom: function (roomNum, roomName)
     {
         var roomPW = $("#TB_ROOM_" + roomNum + "_PW").val();
         //Join room
@@ -477,6 +479,10 @@ GameClient.prototype = {
     OnCardClick: function (id)
     {
         console.log("OnCardClick");
+        if (!this.m_CanClickCard)
+        {
+            return;
+        }
         //Check interval
         var curTick = (new Date()).getTime();
         //console.log(curTick - this.m_PrevClickTick);
@@ -511,36 +517,57 @@ GameClient.prototype = {
         $("#card" + id).closest('.card').css('transform', 'rotatey(-180deg)');
         if (this.m_ClickCards.length === 2)
         {
+            this.m_CanClickCard = false;
             setTimeout(BindWrapper(this, this.CheckCard), 500);
         }
         this.m_PrevClickTick = curTick;
     },
     CheckCard: function ()
     {
+        var self = this;
         var card1 = this.m_GameSettings[this.m_ClickCards[0]].Img;
         var card2 = this.m_GameSettings[this.m_ClickCards[1]].Img;
         if (card1 === card2)
         {
             for (var i = 0; i < this.m_ClickCards.length; i++)
             {
-                $("#card" + this.m_ClickCards[i]).fadeTo(400, 0.1).delay(300).fadeTo(400, 1, BindWrapper(this, function () {
-                    if (this.m_GameOver === 1)
+//                $("#card" + this.m_ClickCards[i]).fadeTo(400, 0.1).delay(300).fadeTo(400, 1, BindWrapper(this, function () {
+//                    if (this.m_GameOver === 1)
+//                    {
+//                        return;
+//                    }
+//                    var openCard = 0;
+//                    for (key in this.m_GameSettings)
+//                    {
+//                        var setting = this.m_GameSettings[key];
+//                        console.log(key + " : " + setting.Open);
+//                        openCard += setting.Open;
+//                    }
+//                    if (openCard >= 16)
+//                    {
+//                        alert("You win the game !!!");
+//                        this.m_GameOver = 1;
+//                    }
+//                }));
+                $("#card" + this.m_ClickCards[i]).fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
+                    if (self.m_GameOver === 1)
                     {
                         return;
                     }
                     var openCard = 0;
-                    for (key in this.m_GameSettings)
+                    for (key in self.m_GameSettings)
                     {
-                        var setting = this.m_GameSettings[key];
+                        var setting = self.m_GameSettings[key];
                         console.log(key + " : " + setting.Open);
                         openCard += setting.Open;
                     }
                     if (openCard >= 16)
                     {
                         alert("You win the game !!!");
-                        this.m_GameOver = 1;
+                        self.m_GameOver = 1;
                     }
-                }));
+                    self.m_CanClickCard = true;
+                });
             }
         }
         else
@@ -561,6 +588,55 @@ GameClient.prototype = {
             this.m_GameSettings[this.m_ClickCards[i]].Click = 0;
             this.m_GameSettings[this.m_ClickCards[i]].Open = 0;
         }
+        this.m_CanClickCard = true;
+    },
+    OpenCountDownDialog: function ()
+    {
+        var self = this;
+        $("#DLG_Count_Down").modal("toggle");
+        $("#IMG_CountDown").attr("src", "images/num03.jpg");
+        $("#IMG_CountDown").css({opacity: 1});
+        $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+            $("#IMG_CountDown").attr("src", "images/num02.jpg");
+            $("#IMG_CountDown").css({opacity: 1});
+            $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                $("#IMG_CountDown").attr("src", "images/num01.jpg");
+                $("#IMG_CountDown").css({opacity: 1});
+                $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                    $("#DLG_Count_Down").modal("toggle");
+                    for (var i = 0; i <= 16; i++)
+                    {
+                        if (i < 10)
+                        {
+                            //flip card to front
+                            $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                            $("#card0" + i).closest('.card').css('transform', 'rotatey(-180deg)');
+                            continue;
+                        }
+                        //flip card to front
+                        $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                        $("#card" + i).closest('.card').css('transform', 'rotatey(-180deg)');
+
+                    }
+                    setTimeout(function () {
+                        for (var i = 0; i <= 16; i++)
+                        {
+                            if (i < 10)
+                            {
+                                //flip card to front
+                                $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                                $("#card0" + i).closest('.card').css('transform', 'rotatey(0deg)');
+                                continue;
+                            }
+                            //flip card to front
+                            $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                            $("#card" + i).closest('.card').css('transform', 'rotatey(0deg)');
+                        }
+                        self.m_CanClickCard = true;
+                    }, 1000);
+                });
+            });
+        });
     },
     Init: function () {
         this.m_ClickCards = [];

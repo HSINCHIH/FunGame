@@ -50,6 +50,7 @@ public class WebSocketReceiveThread extends Thread {
         while (m_IsRunning) {
             try {
                 if (m_InStream.available() <= 0) {
+                    Thread.sleep(10);
                     continue;
                 }
                 byte[] recvBuf = new byte[m_InStream.available()];
@@ -58,13 +59,16 @@ public class WebSocketReceiveThread extends Thread {
                 int decodeLength = Decode(recvBuf, refItem);
                 if (refItem.value.equals("Disconnect")) {
                     Parse(String.format("%s|%d", m_RemoteEndPoint.toString(), ServerAction.DISCONNECTED));
+                    Thread.sleep(10);
                     continue;
                 }
                 if (decodeLength <= 0) {
+                    Thread.sleep(10);
                     continue;
                 }
                 String recvData = String.format("%s|%s", m_RemoteEndPoint.toString(), refItem.value);
                 Parse(recvData);
+                Thread.sleep(10);
             } catch (Exception e) {
                 m_Log.Writeln(String.format("%s Exception : %s", "run", e.getMessage()));
             }

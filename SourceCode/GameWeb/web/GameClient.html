@@ -75,7 +75,19 @@ and open the template in the editor.
             <div class="row" id="gameDiv">
                 <div class="col-md-3 col-xs-3">
                     <div class="flip">
-                        <div class="card" id="card01" on onclick="client.OnCardClick('01')">
+                        <div class="card" id="card00" on onclick="client.OnCardClick('00')">
+                            <div class="face front">
+                                <img src="images/00.png" alt="" class="img-responsive center-block"/>
+                            </div>
+                            <div class="face back">
+                                <img src="images/00.png" alt="" id="image00" class="img-responsive center-block"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-xs-3">
+                    <div class="flip">
+                        <div class="card" id="card01" onclick="client.OnCardClick('01')">
                             <div class="face front">
                                 <img src="images/00.png" alt="" class="img-responsive center-block"/>
                             </div>
@@ -207,7 +219,7 @@ and open the template in the editor.
                 </div>
                 <div class="col-md-3 col-xs-3">
                     <div class="flip">
-                        <div class="card" id="card12" onclick="client.OnCardClick('12')">
+                        <div class="card" id="card12" onclick="client.OnCardClick('12')" >
                             <div class="face front">
                                 <img src="images/00.png" alt="" class="img-responsive center-block"/>
                             </div>
@@ -219,7 +231,7 @@ and open the template in the editor.
                 </div>
                 <div class="col-md-3 col-xs-3">
                     <div class="flip">
-                        <div class="card" id="card13" onclick="client.OnCardClick('13')" >
+                        <div class="card" id="card13" onclick="client.OnCardClick('13')">
                             <div class="face front">
                                 <img src="images/00.png" alt="" class="img-responsive center-block"/>
                             </div>
@@ -249,18 +261,6 @@ and open the template in the editor.
                             </div>
                             <div class="face back">
                                 <img src="images/00.png" alt="" id="image15" class="img-responsive center-block"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-xs-3">
-                    <div class="flip">
-                        <div class="card" id="card16" onclick="client.OnCardClick('16')">
-                            <div class="face front">
-                                <img src="images/00.png" alt="" class="img-responsive center-block"/>
-                            </div>
-                            <div class="face back">
-                                <img src="images/00.png" alt="" id="image16" class="img-responsive center-block"/>
                             </div>
                         </div>
                     </div>
@@ -416,6 +416,15 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Join room-->
+            <div class="modal fade" id="DLG_Count_Down"><!-- Count down-->
+                <div class="modal-dialog">
+                    <div class="modal-content">                      
+                        <div class="modal-body">                      
+                            <img id="IMG_CountDown" src="images/num03.jpg" alt="" class="img-responsive center-block"/>
+                        </div>                          
+                    </div>
+                </div>
+            </div><!-- Count down-->
 
         </div>
         <!-- Bootstrap core JavaScript

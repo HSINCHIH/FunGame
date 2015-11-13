@@ -35,7 +35,10 @@ var ServerAction =
             SVPL_GET_IMAGE: 19,
             PLSV_GAME_READY: 20,
             SVPL_GAME_READY: 21,
-            SVPL_GAME_START: 22
+            SVPL_GAME_START: 22,
+            PLSV_OPERATOR: 23,
+            SVPL_OPERATOR: 24,
+            SVPL_WINNER: 25
         };
 
 

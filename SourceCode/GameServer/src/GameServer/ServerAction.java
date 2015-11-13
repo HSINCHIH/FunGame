@@ -34,4 +34,7 @@ public class ServerAction {
     public static final int PLSV_GAME_READY = 20;
     public static final int SVPL_GAME_READY = 21;
     public static final int SVPL_GAME_START = 22;
+    public static final int PLSV_OPERATOR = 23;
+    public static final int SVPL_OPERATOR = 24;
+    public static final int SVPL_WINNER = 25;
 }

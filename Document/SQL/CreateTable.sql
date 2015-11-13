@@ -1,4 +1,15 @@
-CREATE TABLE `RoomPlayer` (
+CREATE TABLE `Record` (
+`RecordNum` INT(11) NOT NULL AUTO_INCREMENT COMMENT '紀錄編號' ,
+`RoomNum` INT(11) NOT NULL COMMENT '房間編號' ,
+`PlayerNum` INT(11) NOT NULL COMMENT '玩家編號' ,
+`Step` VARCHAR(255) NOT NULL DEFAULT 'empty' COMMENT '玩家操作' ,
+`State` TEXT NOT NULL COMMENT '目前狀態' ,
+`RecordTime` TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL COMMENT '紀錄時間' ,
+PRIMARY KEY (`RecordNum`)
+)
+COLLATE='utf8_unicode_ci'
+ENGINE=InnoDB
+;CREATE TABLE `RoomPlayer` (
 `MemberID` INT(11) NOT NULL AUTO_INCREMENT COMMENT '房間成員編號' ,
 `PlayerNum` INT(11) NOT NULL COMMENT '玩家編號' ,
 `RoomNum` INT(11) NOT NULL COMMENT '房間編號' ,
@@ -30,16 +41,6 @@ ENGINE=InnoDB
 `CreateBy` INT(11) NOT NULL COMMENT '建立者' ,
 `RoomState` INT(11) NOT NULL DEFAULT 1 COMMENT '0:不啟用,1:啟用,2:遊戲中,3:結束' ,
 PRIMARY KEY (`RoomNum`)
-)
-COLLATE='utf8_unicode_ci'
-ENGINE=InnoDB
-;CREATE TABLE `Record` (
-`RecordNum` INT(11) NOT NULL AUTO_INCREMENT COMMENT '紀錄編號' ,
-`RoomNum` INT(11) NOT NULL COMMENT '房間編號' ,
-`PlayerNum` INT(11) NOT NULL COMMENT '玩家編號' ,
-`Command` TEXT NOT NULL COMMENT '玩家指令' ,
-`RecordTime` TIMESTAMP DEFAULT '0000-00-00 00:00:00' NOT NULL COMMENT '紀錄時間' ,
-PRIMARY KEY (`RecordNum`)
 )
 COLLATE='utf8_unicode_ci'
 ENGINE=InnoDB

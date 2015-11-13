@@ -6,8 +6,9 @@
 package GameServer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -70,6 +71,10 @@ public class MainServer implements IReceiveMsgCallBack {
             break;
             case ServerAction.PLSV_GAME_READY: {
                 PLSV_GAME_READY_recv(msg, ep);
+            }
+            break;
+            case ServerAction.PLSV_OPERATOR: {
+                PLSV_OPERATOR_recv(msg, ep);
             }
             break;
             default: {
@@ -434,11 +439,11 @@ public class MainServer implements IReceiveMsgCallBack {
         int orderIndex = 0;
         while (!cloneTemp.isEmpty()) {
             int itemIndex = (int) (Math.random() * cloneTemp.size());
-            sb.append(String.format("\"%02d\":{\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, cloneTemp.get(itemIndex)));
+            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, cloneTemp.get(itemIndex)));
             cloneTemp.remove(itemIndex);
             orderIndex++;
         }
-        return String.format("({%s})", sb.toString().substring(0, sb.length() - 1));
+        return String.format("[%s]", sb.toString().substring(0, sb.length() - 1));
     }
 
     private void PLSV_GET_IMAGE_recv(BaseMessage msg, EndPoint ep) {
@@ -446,7 +451,7 @@ public class MainServer implements IReceiveMsgCallBack {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
             String jsonSetting = GetImageSetting();
-            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Command`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
+            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `State`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GET_IMAGE;
             if (m_DBHandler.Execute(sql) <= 0) {
@@ -501,6 +506,69 @@ public class MainServer implements IReceiveMsgCallBack {
             }
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GAME_READY_recv", e.getMessage()));
+        }
+    }
+
+    private void PLSV_OPERATOR_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            String roomNum = msg.Args.get(1);
+            String step = msg.Args.get(2);
+            String state = msg.Args.get(3);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_OPERATOR;
+            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Step`, `State`, `RecordTime`) VALUES (%s, %s, '%s', '%s', %s);", roomNum, playerNum, step, state, "CURRENT_TIMESTAMP()");
+            if (m_DBHandler.Execute(sql) <= 0) {
+                //Update fail
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_OPERATOR_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
+            m_LocalControlEP.Send(newMsg, ep);
+            //Check game over or not 
+            String patternStr = "(\"Open\":[1])";
+            Pattern pattern = Pattern.compile(patternStr);
+            Matcher matcher = pattern.matcher(state);
+            int totalOpen = 0;
+            while (matcher.find()) {
+                String data = matcher.group(0);
+                totalOpen++;
+            }
+            if (totalOpen == 15) {
+                //Check winner
+                sql = String.format("SELECT PlayerNum FROM `RoomPlayer` WHERE `RoomNum` = %s AND `Winner` = %d;", roomNum, 1);
+                List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+                if (rs.size() > 0) {
+                    return;
+                }
+                //Update roomplayer
+                sql = String.format("UPDATE `RoomPlayer` SET `Winner` = %d WHERE `PlayerNum` = %s AND `RoomNum` = %s;", 1, playerNum, roomNum);
+                if (m_DBHandler.Execute(sql) <= 0) {
+                    //Update fail
+                    m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_OPERATOR_recv", sql));
+                }
+                //Update room
+                sql = String.format("UPDATE `Room` SET `StopTime` = %s, `RoomState` = %d WHERE `RoomNum` = %s;", "CURRENT_TIMESTAMP()", 3, roomNum);
+                if (m_DBHandler.Execute(sql) <= 0) {
+                    //Update fail
+                    m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_OPERATOR_recv", sql));
+                }
+                //Send winner to player
+                newMsg = new BaseMessage();
+                newMsg.Action = ServerAction.SVPL_WINNER;
+                newMsg.Args.add(roomNum);
+                newMsg.Args.add(playerNum);
+                sql = String.format("SELECT T1.EndPoint FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = %d AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", 1, roomNum, 1);
+                rs = m_DBHandler.ExecuteQuery(sql);
+                for (String[] cols : rs) {
+                    EndPoint sendEp = new EndPoint(cols[0]);
+                    m_LocalControlEP.Send(newMsg, sendEp);
+                }
+            }
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_OPERATOR_recv", e.getMessage()));
         }
     }
 }

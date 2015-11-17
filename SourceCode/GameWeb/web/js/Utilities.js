@@ -11,14 +11,13 @@ function StringFormat()
     }
     return result;
 }
-function DigitFormat(digit, value)
+function DigitFormat(value, digit)
 {
     var valueLength = value.toString().length;
-    var digitLength = digit.toString().length;
     var result = "";
-    if (digitLength > valueLength)
+    if (digit > valueLength)
     {
-        for (var i = 0; i < digitLength - valueLength; i++)
+        for (var i = 0; i < digit - valueLength; i++)
         {
             result += "0";
         }

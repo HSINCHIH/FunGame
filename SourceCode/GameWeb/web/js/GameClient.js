@@ -447,7 +447,6 @@ GameClient.prototype = {
         {
             $("#LT_Room_Host_List").append('<li class="list-group-item disabled">' + args[i] + '</li>');
         }
-
     },
     //join room
     OpenJoinRoomDialog: function ()

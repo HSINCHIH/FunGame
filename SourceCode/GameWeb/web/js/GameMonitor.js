@@ -7,6 +7,139 @@ function GameMonitor() {
     this.Init();
 }
 GameMonitor.prototype = {
+    m_Socket: null,
+    m_IsLogin: false,
+    OnOpen: function (event)
+    {
+        console.log("OnOpen");
+        this.m_IsConnect = true;
+    },
+    OnReceive: function (event)
+    {
+        console.log("OnReceive");
+        var recvMsg = this.ParseData(event.data);
+        switch (recvMsg.Action)
+        {
+            case ServerAction.SVMO_LOGIN:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        this.ShowLoginMsg(MessageLevel.Danger, "Login fail, please try again!!");
+                        return;
+                    }
+                    this.ShowLoginMsg(MessageLevel.Info, "Login success!!");
+                    this.m_IsLogin = true;
+                }
+                break;
+            default:
+                {
+                    console.log("unknow message : " + recvMsg.GetString());
+                }
+                break;
+        }
+    },
+    OnError: function (event)
+    {
+        console.log("OnError");
+    },
+    OnClose: function (event)
+    {
+        console.log("OnClose");
+    },
+    Send: function (msg)
+    {
+        this.m_Socket.Send(msg.GetString());
+    },
+    ParseData: function (recvString)
+    {
+        var args = recvString.split(/[\|;]/);
+        var msg = new Message();
+        msg.Action = parseInt(args[0]);
+        for (var i = 1; i < args.length; i++)
+        {
+            msg.Args.push(args[i]);
+        }
+        return msg;
+    },
+    Connect: function ()
+    {
+        this.m_Socket.Connect(GameServerIP + ":" + GameServerPort);
+    },
+    ShowMsg: function (item, level, msg)
+    {
+        var selectItem = $("#" + item);
+        selectItem.show();
+        selectItem.removeClass();
+        selectItem.addClass("alert");
+        switch (level)
+        {
+            case MessageLevel.Info:
+                {
+                    selectItem.addClass("alert-info");
+                }
+                break;
+            case MessageLevel.Danger:
+                {
+                    selectItem.addClass("alert-danger");
+                }
+                break;
+            case MessageLevel.Warning:
+                {
+                    selectItem.addClass("alert-warning");
+                }
+                break;
+            case MessageLevel.Success:
+                {
+                    selectItem.addClass("alert-success");
+                }
+                break;
+            case MessageLevel.Info:
+                {
+                    selectItem.addClass("alert-info");
+                }
+                break;
+        }
+        selectItem.text(msg);
+    },
+    //Login
+    OpenLoginDialog: function ()
+    {
+        //Reset login form
+        $("#TB_Login_ID").val("");
+        $("#TB_Login_PW").val("");
+        $("#CKB_RememberMe").prop("checked", false);
+        $("#LB_Login_MSG").text("");
+        $("#LB_Login_MSG").hide();
+        $("#BT_Login").prop('disabled', false);
+        //Toggle form
+        $("#DLG_Login").modal("toggle");
+    },
+    CloseLoginDialog: function ()
+    {
+        $("#DLG_Login").modal("toggle");
+    },
+    Login: function ()
+    {
+        //Disable button
+        $("#BT_Login").prop('disabled', true);
+        if (!this.m_IsConnect)
+        {
+            console.log("Socket no connect ");
+            return;
+        }
+        var name = $("#TB_Login_ID").val();
+        var pw = $("#TB_Login_PW").val();
+        var rememberMe = $("#CKB_RememberMe").prop("checked");
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_LOGIN;
+        newMsg.Args.push(name);
+        newMsg.Args.push(pw);
+        this.Send(newMsg);
+    },
+    ShowLoginMsg: function (level, msg)
+    {
+        this.ShowMsg("LB_Login_MSG", level, msg);
+    },
     CreateCard: function ()
     {
         var twoSide = ["Left", "Right"];
@@ -24,6 +157,12 @@ GameMonitor.prototype = {
     Init: function ()
     {
         this.CreateCard();
+        this.m_Socket = new WrapWebSocket();
+        this.m_Socket.m_Event.AddListener("onOpen", BindWrapper(this, this.OnOpen));
+        this.m_Socket.m_Event.AddListener("onReceive", BindWrapper(this, this.OnReceive));
+        this.m_Socket.m_Event.AddListener("onError", BindWrapper(this, this.OnError));
+        this.m_Socket.m_Event.AddListener("onClose", BindWrapper(this, this.OnClose));
+        this.Connect();
     }
 };
 

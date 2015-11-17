@@ -20,6 +20,7 @@ public class MainServer implements IReceiveMsgCallBack {
     String m_HostIP = "";
     WebSocketServerEP m_LocalControlEP = null;
     DataBaseHandler m_DBHandler = null;
+    EndPoint m_MonitorEP = null;
 
     public MainServer() {
         m_HostIP = Utilities.GetHostIP();
@@ -77,6 +78,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_OPERATOR_recv(msg, ep);
             }
             break;
+            case ServerAction.MOSV_LOGIN: {
+                MOSV_LOGIN_recv(msg, ep);
+            }
+            break;
             default: {
                 m_Log.Writeln(String.format("%s UnKnown message : %s", "ReceiveMsg", msg.toString()));
             }
@@ -112,11 +117,20 @@ public class MainServer implements IReceiveMsgCallBack {
     }
 
     private void DISCONNECTED_recv(BaseMessage msg, EndPoint ep) {
-        String sql = String.format("UPDATE `Player` SET `Online` = %d WHERE `EndPoint` = '%s';", 0, ep.toString());
-        if (m_DBHandler.Execute(sql) <= 0) {
-            //Update fail
-            m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_LOGIN_recv", sql));
+        if (m_MonitorEP != null && ep.toString().equals(m_MonitorEP.toString())) {
+            m_MonitorEP = null;
+        } else {
+            String sql = String.format("SELECT `PlayerNum` FROM `Player` WHERE `EndPoint` = '%s';", ep.toString());
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() > 0) {
+                sql = String.format("UPDATE `Player` SET `Online` = %d WHERE `EndPoint` = '%s';", 0, ep.toString());
+                if (m_DBHandler.Execute(sql) <= 0) {
+                    //Update fail
+                    m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_LOGIN_recv", sql));
+                }
+            }
         }
+        m_LocalControlEP.Remove(ep);
     }
 
     private void PLSV_REGISTRY_recv(BaseMessage msg, EndPoint ep) {
@@ -569,6 +583,28 @@ public class MainServer implements IReceiveMsgCallBack {
             }
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_OPERATOR_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_LOGIN_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String name = msg.Args.get(0);
+            String pw = msg.Args.get(1);
+            BaseMessage newMsg = new BaseMessage();
+            if (!name.equals("monitor") || !pw.equals("monitor")) {
+                return;
+            }
+            if (m_MonitorEP != null) {
+                newMsg.Action = ServerAction.DUPLICATE_LOGIN;
+                m_LocalControlEP.Send(newMsg, m_MonitorEP);
+                m_LocalControlEP.Remove(m_MonitorEP);
+            }
+            m_MonitorEP = new EndPoint(ep.toString());
+            newMsg.Action = ServerAction.SVMO_LOGIN;
+            newMsg.Args.add("1");//Success
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_LOGIN_recv", e.getMessage()));
         }
     }
 }

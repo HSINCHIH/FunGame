@@ -120,4 +120,23 @@ public class WebSocketServerEP implements IBaseEP, IAcceptSocketCallBack {
             return null;
         }
     }
+
+    public void Remove(EndPoint ep) {
+        try {
+            String key = ep.toString();
+            if (m_ReceiveThreadTable.containsKey(key)) {
+                WebSocketReceiveThread thread = m_ReceiveThreadTable.get(key);
+                m_ReceiveThreadTable.remove(key);
+                thread.Abort();
+                thread = null;
+            }
+            if (m_Sessions.containsKey(key)) {
+                Socket session = m_Sessions.get(key);
+                m_Sessions.remove(key);
+                session.close();
+            }
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "Remove", e.getMessage()));
+        }
+    }
 }

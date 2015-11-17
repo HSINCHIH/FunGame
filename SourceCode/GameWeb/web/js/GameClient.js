@@ -4,6 +4,7 @@
  * and open the template in the editor.
  */
 function GameClient() {
+    this.Init();
 }
 GameClient.prototype = {
     m_Socket: null,

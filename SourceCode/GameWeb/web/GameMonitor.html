@@ -48,7 +48,7 @@ and open the template in the editor.
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick=""><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
-                                <li><a href="#" onclick=""><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                                <li><a href="#" onclick="monitor.OpenLoginDialog()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                             </ul>
                         </div><!-- /.navbar-collapse -->
                     </div><!-- /.container-fluid -->
@@ -60,6 +60,36 @@ and open the template in the editor.
                     </div>
                 </div> 
             </header>
+            <div class="modal fade" id="DLG_Login"><!-- Login-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <form action="" method="">
+                                <div class="form-group">
+                                    <label for="TB_Login_ID">UserName</label>
+                                    <input type="text" class="form-control" id="TB_Login_ID"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="TB_Login_PW">Password</label>
+                                    <input type="password" class="form-control" id="TB_Login_PW"/>
+                                </div>
+                                <div class="form-group">
+                                    <input id="CKB_RememberMe" type="checkbox">
+                                    <label for="CKB_RememberMe">
+                                        Remember Me
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <div class="alert" role="alert" id="LB_Login_MSG"></div>
+                                </div>
+                                <div class="form-group">
+                                    <input type="button" class="btn btn-default" id="BT_Login" value="Login" onclick="monitor.Login()"/>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- Login-->
         </div>
         <!-- Bootstrap core JavaScript
            ================================================== -->

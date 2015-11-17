@@ -44,7 +44,7 @@ and open the template in the editor.
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
                                 <li ><a href="#">Home</a></li>
-                                <li><a href="#" onclick=""> Watch Room</a></li>                                
+                                <li><a href="#" onclick="monitor.OpenWatchRoomDialog()"> Watch Room</a></li>                                
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick=""><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
@@ -90,6 +90,27 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Login-->
+            <div class="modal fade" id="DLG_Watch_Room"><!-- Join room-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1>Available Room</h1>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table" id="GD_Room_List">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>      
+                                </tbody>
+                            </table>
+                        </div>                          
+                    </div>
+                </div>
+            </div><!-- Join room-->
         </div>
         <!-- Bootstrap core JavaScript
            ================================================== -->

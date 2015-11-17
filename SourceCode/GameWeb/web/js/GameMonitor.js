@@ -27,8 +27,17 @@ GameMonitor.prototype = {
                         this.ShowLoginMsg(MessageLevel.Danger, "Login fail, please try again!!");
                         return;
                     }
-                    this.ShowLoginMsg(MessageLevel.Info, "Login success!!");
                     this.m_IsLogin = true;
+                }
+                break;
+            case ServerAction.SVMO_GET_ENABLE_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_GET_ENABLE_ROOM"));
+                        return;
+                    }
+                    this.ShowWatchRoomList(recvMsg.Args[1]);
                 }
                 break;
             default:
@@ -139,6 +148,31 @@ GameMonitor.prototype = {
     ShowLoginMsg: function (level, msg)
     {
         this.ShowMsg("LB_Login_MSG", level, msg);
+    },
+    OpenWatchRoomDialog: function ()
+    {
+         var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_GET_ENABLE_ROOM;
+        this.Send(newMsg);
+        //Toggle form
+        $("#DLG_Watch_Room").modal("toggle");
+    },
+    CloseWatchRoomDialog: function ()
+    {
+        //Toggle form
+        $("#DLG_Watch_Room").modal("toggle");
+    },
+    WatchRoom: function (roomNum, roomName)
+    {
+    },
+    ShowWatchRoomList: function (rawData)
+    {
+        var roomList = eval(rawData);
+        $('#GD_Room_List tbody tr').remove();
+        for (var i = 0; i < roomList.length; i++)
+        {
+            $('#GD_Room_List tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
+        }
     },
     CreateCard: function ()
     {

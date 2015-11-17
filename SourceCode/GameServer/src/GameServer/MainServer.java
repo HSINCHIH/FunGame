@@ -82,6 +82,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 MOSV_LOGIN_recv(msg, ep);
             }
             break;
+            case ServerAction.MOSV_GET_ENABLE_ROOM: {
+                MOSV_GET_ENABLE_ROOM_recv(msg, ep);
+            }
+            break;
             default: {
                 m_Log.Writeln(String.format("%s UnKnown message : %s", "ReceiveMsg", msg.toString()));
             }
@@ -604,7 +608,25 @@ public class MainServer implements IReceiveMsgCallBack {
             newMsg.Args.add("1");//Success
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
-            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_LOGIN_recv", e.getMessage()));
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_LOGIN_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_GET_ENABLE_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String sql = String.format("SELECT `RoomNum`,`RoomName` FROM `Room` WHERE `RoomState` < %d;", 3);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_GET_ENABLE_ROOM;
+            StringBuilder sb = new StringBuilder();
+            newMsg.Args.add("1");//Success
+            for (String[] cols : rs) {
+                sb.append(String.format("{RoomNum:\"%s\",RoomName:\"%s\"},", cols[0], cols[1]));
+            }
+            newMsg.Args.add(String.format("[%s]", sb.toString().substring(0, sb.length() - 1)));
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GET_ENABLE_ROOM_recv", e.getMessage()));
         }
     }
 }

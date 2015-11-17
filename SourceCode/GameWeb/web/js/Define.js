@@ -41,7 +41,9 @@ var ServerAction =
             SVPL_OPERATOR: 25,
             SVPL_WINNER: 26,
             MOSV_LOGIN: 27,
-            SVMO_LOGIN: 28
+            SVMO_LOGIN: 28,
+            MOSV_GET_ENABLE_ROOM: 29,
+            SVMO_GET_ENABLE_ROOM: 30
         };
 
 

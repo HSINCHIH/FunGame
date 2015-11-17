@@ -21,6 +21,7 @@ public class MainServer implements IReceiveMsgCallBack {
     WebSocketServerEP m_LocalControlEP = null;
     DataBaseHandler m_DBHandler = null;
     EndPoint m_MonitorEP = null;
+    String m_WatchRoom = "-1";
 
     public MainServer() {
         m_HostIP = Utilities.GetHostIP();
@@ -84,6 +85,10 @@ public class MainServer implements IReceiveMsgCallBack {
             break;
             case ServerAction.MOSV_GET_ENABLE_ROOM: {
                 MOSV_GET_ENABLE_ROOM_recv(msg, ep);
+            }
+            break;
+            case ServerAction.MOSV_WATCH_ROOM: {
+                MOSV_WATCH_ROOM_recv(msg, ep);
             }
             break;
             default: {
@@ -627,6 +632,20 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GET_ENABLE_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_WATCH_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String roomNum = msg.Args.get(0);
+            m_WatchRoom = roomNum;
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_WATCH_ROOM;
+            newMsg.Args.add("1");//Success
+             newMsg.Args.add(roomNum);
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_WATCH_ROOM_recv", e.getMessage()));
         }
     }
 }

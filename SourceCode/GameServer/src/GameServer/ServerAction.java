@@ -42,4 +42,6 @@ public class ServerAction {
     public static final int SVMO_LOGIN = 28;
     public static final int MOSV_GET_ENABLE_ROOM = 29;
     public static final int SVMO_GET_ENABLE_ROOM = 30;
+    public static final int MOSV_WATCH_ROOM = 31;
+    public static final int SVMO_WATCH_ROOM = 32;
 }

@@ -9,6 +9,7 @@ function GameMonitor() {
 GameMonitor.prototype = {
     m_Socket: null,
     m_IsLogin: false,
+    m_WatchRoom: -1,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -28,6 +29,7 @@ GameMonitor.prototype = {
                         return;
                     }
                     this.m_IsLogin = true;
+                    this.CloseLoginDialog();
                 }
                 break;
             case ServerAction.SVMO_GET_ENABLE_ROOM:
@@ -38,6 +40,17 @@ GameMonitor.prototype = {
                         return;
                     }
                     this.ShowWatchRoomList(recvMsg.Args[1]);
+                }
+                break;
+            case ServerAction.SVMO_WATCH_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_WATCH_ROOM"));
+                        return;
+                    }
+                    this.m_WatchRoom = recvMsg.Args[1];
+                    this.CloseWatchRoomDialog();
                 }
                 break;
             default:
@@ -151,7 +164,7 @@ GameMonitor.prototype = {
     },
     OpenWatchRoomDialog: function ()
     {
-         var newMsg = new Message();
+        var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GET_ENABLE_ROOM;
         this.Send(newMsg);
         //Toggle form
@@ -164,6 +177,10 @@ GameMonitor.prototype = {
     },
     WatchRoom: function (roomNum, roomName)
     {
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_WATCH_ROOM;
+        newMsg.Args.push(roomNum);
+        this.Send(newMsg);
     },
     ShowWatchRoomList: function (rawData)
     {

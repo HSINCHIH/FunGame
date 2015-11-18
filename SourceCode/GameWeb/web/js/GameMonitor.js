@@ -10,6 +10,7 @@ GameMonitor.prototype = {
     m_Socket: null,
     m_IsLogin: false,
     m_WatchRoom: -1,
+    m_RoomState: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -51,6 +52,20 @@ GameMonitor.prototype = {
                     }
                     this.m_WatchRoom = recvMsg.Args[1];
                     this.CloseWatchRoomDialog();
+                    var newMsg = new Message();
+                    newMsg.Action = ServerAction.MOSV_LOAD_ROOM_STATE;
+                    newMsg.Args.push(this.m_WatchRoom);
+                    this.Send(newMsg);
+                }
+                break;
+            case ServerAction.SVMO_LOAD_ROOM_STATE:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_LOAD_ROOM_STATE"));
+                        return;
+                    }
+                    this.LoadRoomState(recvMsg);
                 }
                 break;
             default:
@@ -191,7 +206,94 @@ GameMonitor.prototype = {
             $('#GD_Room_List tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
         }
     },
-    CreateCard: function ()
+    LoadRoomState: function (recvMsg)
+    {
+        for (var i = 1; i < recvMsg.Args.length; i += 4)
+        {
+            var playerNum = recvMsg.Args[i + 0];
+            var playerName = recvMsg.Args[i + 1];
+            var step = recvMsg.Args[i + 2];
+            var state = recvMsg.Args[i + 3];
+            var cardState = eval(state);
+            $("#DIV_Game").append('<div id="' + StringFormat("DIV_{0}", playerNum) + '" class="col-md-6 col-xs-6"></div>');
+            $("#DIV_" + playerNum).css({"border": "1px solid #F0F0F0"});
+            $("#DIV_" + playerNum).append('<div class="col-md-12 col-xs-12">Player : ' + playerName + '</div>');
+            for (var j = 0; j < cardState.length; j++)
+            {
+                var item = cardState[j];
+                var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}_{1}", playerNum, item.Card) + '" on onclick="monitor.OnCardClick(\'' + StringFormat("{0}_{1}", playerNum, item.Card) + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}_{1}", playerNum, item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
+                $("#DIV_" + playerNum).append(test);
+            }
+            this.m_RoomState[playerNum] = {ClickCards: [], State: cardState};
+            this.ApplyState(playerNum, cardState);
+            this.ApplyStep(playerNum, step);
+        }
+    },
+    ApplyState: function (playerNum, cardState)
+    {
+        for (var i = 0; i < cardState.length; i++)
+        {
+            var item = cardState[i];
+            var card = $(StringFormat("#card_{0}_{1}", playerNum, item.Card));
+            card.data("Card", item.Card);
+            card.data("Open", item.Open);
+            card.data("Click", item.Click);
+            card.data("Img", item.Img);
+            if (item.Open)
+            {
+                //flip card to front
+                card.closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                card.closest('.card').css('transform', 'rotatey(-180deg)');
+            }
+            if (item.Click)
+            {
+                this.m_RoomState[playerNum].ClickCards.push(item.Card);
+            }
+        }
+    },
+    ApplyStep: function (playerNum, step)
+    {
+        var selectCard = $(StringFormat("#card_{0}_{1}", playerNum, step));
+        this.m_RoomState[playerNum].ClickCards.push(step);
+        selectCard.data("Open", 1);
+        selectCard.data("Click", 1);
+        //flip card to front
+        selectCard.closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+        selectCard.closest('.card').css('transform', 'rotatey(-180deg)');
+
+        var self = this;
+        if (this.m_RoomState[playerNum].ClickCards.length === 2)
+        {
+            setTimeout(function () {
+                var selectCard1 = $(StringFormat("#card_{0}_{1}", playerNum, self.m_RoomState[playerNum].ClickCards[0]));
+                var selectCard2 = $(StringFormat("#card_{0}_{1}", playerNum, self.m_RoomState[playerNum].ClickCards[1]));
+                if (selectCard1.data("Img") === selectCard2.data("Img"))
+                {
+                    selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
+                    selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
+                        selectCard1.data("Click", 0);
+                        selectCard2.data("Click", 0);
+                    });
+                }
+                else
+                {
+                    for (var i = 0; i < self.m_RoomState[playerNum].ClickCards.length; i++)
+                    {
+                        var selectCard = $(StringFormat("#card_{0}_{1}", playerNum, self.m_RoomState[playerNum].ClickCards[i]));
+                        //flip cards to back
+                        selectCard.closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                        selectCard.closest('.card').css('transform', 'rotatey(0deg)');
+                        //reset status to 0
+                        selectCard.data("Click", 0);
+                        selectCard.data("Open", 0);
+                    }
+                }
+                //reset array
+                self.m_RoomState[playerNum].ClickCards = [];
+            }, 500);
+        }
+    },
+    CreateCard1: function ()
     {
         var twoSide = ["Left", "Right"];
         for (var i = 0; i < twoSide.length; i++)
@@ -207,7 +309,8 @@ GameMonitor.prototype = {
     },
     Init: function ()
     {
-        this.CreateCard();
+        //this.CreateCard();
+        this.m_RoomState = [];
         this.m_Socket = new WrapWebSocket();
         this.m_Socket.m_Event.AddListener("onOpen", BindWrapper(this, this.OnOpen));
         this.m_Socket.m_Event.AddListener("onReceive", BindWrapper(this, this.OnReceive));

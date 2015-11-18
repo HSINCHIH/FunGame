@@ -45,7 +45,9 @@ var ServerAction =
             MOSV_GET_ENABLE_ROOM: 29,
             SVMO_GET_ENABLE_ROOM: 30,
             MOSV_WATCH_ROOM: 31,
-            SVMO_WATCH_ROOM: 32
+            SVMO_WATCH_ROOM: 32,
+            MOSV_LOAD_ROOM_STATE: 33,
+            SVMO_LOAD_ROOM_STATE: 34
         };
 
 

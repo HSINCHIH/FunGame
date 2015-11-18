@@ -91,6 +91,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 MOSV_WATCH_ROOM_recv(msg, ep);
             }
             break;
+            case ServerAction.MOSV_LOAD_ROOM_STATE: {
+                MOSV_LOAD_ROOM_STATE_recv(msg, ep);
+            }
+            break;
             default: {
                 m_Log.Writeln(String.format("%s UnKnown message : %s", "ReceiveMsg", msg.toString()));
             }
@@ -642,10 +646,31 @@ public class MainServer implements IReceiveMsgCallBack {
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVMO_WATCH_ROOM;
             newMsg.Args.add("1");//Success
-             newMsg.Args.add(roomNum);
+            newMsg.Args.add(roomNum);
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "MOSV_WATCH_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_LOAD_ROOM_STATE_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String roomNum = msg.Args.get(0);
+            String sql = String.format("SELECT T1.PlayerNum, T2.PlayerName, T1.Step, T1.State, T1.RecordTime FROM `Record` AS T1, `Player` AS T2 WHERE EXISTS(SELECT MAX(RecordNum) AS `LatestNum`, `PlayerNum`, `RoomNum` FROM `Record` GROUP BY `PlayerNum` HAVING `RoomNum` = %s AND T1.RecordNum = `LatestNum`) AND T1.PlayerNum = T2.PlayerNum;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_LOAD_ROOM_STATE;
+            StringBuilder sb = new StringBuilder();
+            newMsg.Args.add("1");//Success
+            for (String[] cols : rs) {
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
+                newMsg.Args.add(cols[3]);
+            }
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_LOAD_ROOM_STATE_recv", e.getMessage()));
         }
     }
 }

@@ -67,8 +67,8 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_INITIAL_GAME_recv(msg, ep);
             }
             break;
-            case ServerAction.PLSV_GET_IMAGE: {
-                PLSV_GET_IMAGE_recv(msg, ep);
+            case ServerAction.PLSV_GET_CARD_STATE: {
+                PLSV_GET_CARD_STATE_recv(msg, ep);
             }
             break;
             case ServerAction.PLSV_GAME_READY: {
@@ -456,31 +456,38 @@ public class MainServer implements IReceiveMsgCallBack {
         }
     }
 
-    private String GetImageSetting() {
-        ArrayList<Integer> temp = new ArrayList<>();
-        for (int i = 0; i < 16; i++) {
-            temp.add((i % 8) + 1);
+    private String CreateCardState() {
+        ArrayList<Integer> sourceItems = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            sourceItems.add(i);
         }
-        ArrayList<Integer> cloneTemp = (ArrayList<Integer>) temp.clone();
+        ArrayList<Integer> pickItems = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int index = (int) (Math.random() * sourceItems.size());
+            int item = sourceItems.get(index);
+            pickItems.add(item);
+            pickItems.add(item);
+            sourceItems.remove(index);
+        }
         StringBuilder sb = new StringBuilder();
         int orderIndex = 0;
-        while (!cloneTemp.isEmpty()) {
-            int itemIndex = (int) (Math.random() * cloneTemp.size());
-            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, cloneTemp.get(itemIndex)));
-            cloneTemp.remove(itemIndex);
+        while (!pickItems.isEmpty()) {
+            int index = (int) (Math.random() * pickItems.size());
+            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, pickItems.get(index)));
+            pickItems.remove(index);
             orderIndex++;
         }
         return String.format("[%s]", sb.toString().substring(0, sb.length() - 1));
     }
 
-    private void PLSV_GET_IMAGE_recv(BaseMessage msg, EndPoint ep) {
+    private void PLSV_GET_CARD_STATE_recv(BaseMessage msg, EndPoint ep) {
         try {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
-            String jsonSetting = GetImageSetting();
+            String jsonSetting = CreateCardState();
             String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `State`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
             BaseMessage newMsg = new BaseMessage();
-            newMsg.Action = ServerAction.SVPL_GET_IMAGE;
+            newMsg.Action = ServerAction.SVPL_GET_CARD_STATE;
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Update fail
                 newMsg.Args.add("0");//Fail

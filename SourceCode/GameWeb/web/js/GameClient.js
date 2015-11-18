@@ -136,17 +136,17 @@ GameClient.prototype = {
             case ServerAction.SVPL_SETUP_GAME:
                 {
                     var newMsg = new Message();
-                    newMsg.Action = ServerAction.PLSV_GET_IMAGE;
+                    newMsg.Action = ServerAction.PLSV_GET_CARD_STATE;
                     newMsg.Args.push(this.m_PlayerNum);
                     newMsg.Args.push(this.m_RoomNum);
                     this.Send(newMsg);
                 }
                 break;
-            case ServerAction.SVPL_GET_IMAGE:
+            case ServerAction.SVPL_GET_CARD_STATE:
                 {
                     if (recvMsg.Args[0] === "0")
                     {
-                        console.log("SVPL_GET_IMAGE fail");
+                        console.log("SVPL_GET_CARD_STATE fail");
                         return;
                     }
                     this.CleanState();
@@ -229,38 +229,6 @@ GameClient.prototype = {
     Connect: function ()
     {
         this.m_Socket.Connect(GameServerIP + ":" + GameServerPort);
-    },
-    CreateDefaultCards: function ()
-    {
-        var jsonString = '[{"Card":"00","Img":"08","Open":0,"Click":0},{"Card":"01","Img":"07","Open":0,"Click":0},{"Card":"02","Img":"07","Open":0,"Click":0},{"Card":"03","Img":"03","Open":0,"Click":0},{"Card":"04","Img":"06","Open":0,"Click":0},{"Card":"05","Img":"02","Open":0,"Click":0},{"Card":"06","Img":"06","Open":0,"Click":0},{"Card":"07","Img":"05","Open":0,"Click":0},{"Card":"08","Img":"04","Open":0,"Click":0},{"Card":"09","Img":"05","Open":0,"Click":0},{"Card":"10","Img":"02","Open":0,"Click":0},{"Card":"11","Img":"04","Open":0,"Click":0},{"Card":"12","Img":"01","Open":0,"Click":0},{"Card":"13","Img":"03","Open":0,"Click":0},{"Card":"14","Img":"08","Open":0,"Click":0},{"Card":"15","Img":"01","Open":0,"Click":0}]';
-        //this.SetupCards(jsonString);
-        this.LoadRoomState(jsonString);
-    },
-    LoadRoomState: function (state)
-    {
-        var playerNum = this.m_PlayerNum;
-        var cardState = eval(state);
-        $("#DIV_Game").append('<div id="' + StringFormat("DIV_{0}", playerNum) + '" class="col-md-12 col-xs-12"></div>');
-        $("#DIV_" + playerNum).css({"border": "1px solid #F0F0F0"});
-        for (var j = 0; j < cardState.length; j++)
-        {
-            var item = cardState[j];
-            var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ApplyStep(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
-            $("#DIV_" + playerNum).append(test);
-        }
-        this.ApplyState(cardState);
-    },
-    ApplyState: function (cardState)
-    {
-        for (var i = 0; i < cardState.length; i++)
-        {
-            var item = cardState[i];
-            var card = $(StringFormat("#card_{0}", item.Card));
-            card.data("Card", item.Card);
-            card.data("Open", item.Open);
-            card.data("Click", item.Click);
-            card.data("Img", item.Img);
-        }
     },
     ShowMsg: function (item, level, msg)
     {
@@ -433,19 +401,6 @@ GameClient.prototype = {
         this.CloseRoomHostDialog();
         $("#LT_Room_Host_List").empty();
     },
-    ShowWelcome: function (name)
-    {
-        $("#DLG_Welcome").modal("toggle");
-        $("#LB_Welcome_MSG").text("Welcome back " + name);
-    },
-    ShowPlayer: function (playerName)
-    {
-        $("#LB_PLAYER").text("Player : " + playerName);
-    },
-    ShowRoom: function (roomName)
-    {
-        $("#LB_ROOM").text("Room : " + roomName);
-    },
     ShowHostRoomName: function (roomName)
     {
         $("#LB_Room_Host_Name").text(roomName);
@@ -499,6 +454,53 @@ GameClient.prototype = {
     {
         this.ShowMsg("LB_JOIN_ROOM_MSG", level, msg);
     },
+    OpenCountDownDialog: function ()
+    {
+        var self = this;
+        $("#DLG_Count_Down").modal("toggle");
+        $("#IMG_CountDown").attr("src", "images/num03.jpg");
+        $("#IMG_CountDown").css({opacity: 1});
+        $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+            $("#IMG_CountDown").attr("src", "images/num02.jpg");
+            $("#IMG_CountDown").css({opacity: 1});
+            $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                $("#IMG_CountDown").attr("src", "images/num01.jpg");
+                $("#IMG_CountDown").css({opacity: 1});
+                $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                    $("#DLG_Count_Down").modal("toggle");
+                    for (var i = 0; i <= 16; i++)
+                    {
+                        if (i < 10)
+                        {
+                            //flip card to front
+                            $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                            $("#card0" + i).closest('.card').css('transform', 'rotatey(-180deg)');
+                            continue;
+                        }
+                        //flip card to front
+                        $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                        $("#card" + i).closest('.card').css('transform', 'rotatey(-180deg)');
+                    }
+                    setTimeout(function () {
+                        for (var i = 0; i <= 16; i++)
+                        {
+                            if (i < 10)
+                            {
+                                //flip card to front
+                                $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                                $("#card0" + i).closest('.card').css('transform', 'rotatey(0deg)');
+                                continue;
+                            }
+                            //flip card to front
+                            $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                            $("#card" + i).closest('.card').css('transform', 'rotatey(0deg)');
+                        }
+                        self.m_CanClickCard = true;
+                    }, 1000);
+                });
+            });
+        });
+    },
     LeaveRoom: function ()
     {
         //leave room
@@ -508,6 +510,51 @@ GameClient.prototype = {
         newMsg.Args.push(this.m_RoomNum);
         newMsg.Args.push(this.m_RoomName);
         this.Send(newMsg);
+    },
+    CreateDefaultCards: function ()
+    {
+        var jsonString = '[{"Card":"00","Img":"08","Open":0,"Click":0},{"Card":"01","Img":"07","Open":0,"Click":0},{"Card":"02","Img":"07","Open":0,"Click":0},{"Card":"03","Img":"03","Open":0,"Click":0},{"Card":"04","Img":"06","Open":0,"Click":0},{"Card":"05","Img":"02","Open":0,"Click":0},{"Card":"06","Img":"06","Open":0,"Click":0},{"Card":"07","Img":"05","Open":0,"Click":0},{"Card":"08","Img":"04","Open":0,"Click":0},{"Card":"09","Img":"05","Open":0,"Click":0},{"Card":"10","Img":"02","Open":0,"Click":0},{"Card":"11","Img":"04","Open":0,"Click":0},{"Card":"12","Img":"01","Open":0,"Click":0},{"Card":"13","Img":"03","Open":0,"Click":0},{"Card":"14","Img":"08","Open":0,"Click":0},{"Card":"15","Img":"01","Open":0,"Click":0}]';
+        //this.SetupCards(jsonString);
+        this.LoadRoomState(jsonString);
+    },
+    ShowWelcome: function (name)
+    {
+        $("#DLG_Welcome").modal("toggle");
+        $("#LB_Welcome_MSG").text("Welcome back " + name);
+    },
+    ShowPlayer: function (playerName)
+    {
+        $("#LB_PLAYER").text("Player : " + playerName);
+    },
+    ShowRoom: function (roomName)
+    {
+        $("#LB_ROOM").text("Room : " + roomName);
+    },
+    LoadRoomState: function (state)
+    {
+        var playerNum = this.m_PlayerNum;
+        var cardState = eval(state);
+        $("#DIV_Game").append('<div id="' + StringFormat("DIV_{0}", playerNum) + '" class="col-md-12 col-xs-12"></div>');
+        $("#DIV_" + playerNum).css({"border": "1px solid #F0F0F0"});
+        for (var j = 0; j < cardState.length; j++)
+        {
+            var item = cardState[j];
+            var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ApplyStep(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
+            $("#DIV_" + playerNum).append(test);
+        }
+        this.ApplyState(cardState);
+    },
+    ApplyState: function (cardState)
+    {
+        for (var i = 0; i < cardState.length; i++)
+        {
+            var item = cardState[i];
+            var card = $(StringFormat("#card_{0}", item.Card));
+            card.data("Card", item.Card);
+            card.data("Open", item.Open);
+            card.data("Click", item.Click);
+            card.data("Img", item.Img);
+        }
     },
     ApplyStep: function (step)
     {
@@ -593,53 +640,6 @@ GameClient.prototype = {
         self.m_CanClickCard = false;
         this.m_ClickCards = [];
     },
-    OpenCountDownDialog: function ()
-    {
-        var self = this;
-        $("#DLG_Count_Down").modal("toggle");
-        $("#IMG_CountDown").attr("src", "images/num03.jpg");
-        $("#IMG_CountDown").css({opacity: 1});
-        $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
-            $("#IMG_CountDown").attr("src", "images/num02.jpg");
-            $("#IMG_CountDown").css({opacity: 1});
-            $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
-                $("#IMG_CountDown").attr("src", "images/num01.jpg");
-                $("#IMG_CountDown").css({opacity: 1});
-                $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
-                    $("#DLG_Count_Down").modal("toggle");
-                    for (var i = 0; i <= 16; i++)
-                    {
-                        if (i < 10)
-                        {
-                            //flip card to front
-                            $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
-                            $("#card0" + i).closest('.card').css('transform', 'rotatey(-180deg)');
-                            continue;
-                        }
-                        //flip card to front
-                        $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
-                        $("#card" + i).closest('.card').css('transform', 'rotatey(-180deg)');
-                    }
-                    setTimeout(function () {
-                        for (var i = 0; i <= 16; i++)
-                        {
-                            if (i < 10)
-                            {
-                                //flip card to front
-                                $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
-                                $("#card0" + i).closest('.card').css('transform', 'rotatey(0deg)');
-                                continue;
-                            }
-                            //flip card to front
-                            $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
-                            $("#card" + i).closest('.card').css('transform', 'rotatey(0deg)');
-                        }
-                        self.m_CanClickCard = true;
-                    }, 1000);
-                });
-            });
-        });
-    },
     GetState: function ()
     {
         var cardState = [];
@@ -660,8 +660,7 @@ GameClient.prototype = {
         newMsg.Args.push(cardID);
         newMsg.Args.push(this.GetState());
         this.Send(newMsg);
-    }
-    ,
+    },
     OpenGameResultDialog: function (isWin)
     {
         var src = isWin ? "images/you_win.jpg" : "images/you_lose.jpg";
@@ -669,8 +668,7 @@ GameClient.prototype = {
         $("#IMG_Game_Result").css({height: "1%", width: "1%"});
         $("#DLG_Game_Result").modal("toggle");
         $("#IMG_Game_Result").animate({height: "50%", width: "50%"}, 500);
-    }
-    ,
+    },
     Init: function () {
         this.m_ClickCards = [];
         //this.CreateDefaultCards();

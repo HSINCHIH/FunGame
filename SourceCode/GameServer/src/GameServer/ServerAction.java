@@ -30,8 +30,8 @@ public class ServerAction {
     public static final int PLSV_INITIAL_GAME = 16;
     public static final int SVPL_INITIAL_GAME = 17;
     public static final int SVPL_SETUP_GAME = 18;
-    public static final int PLSV_GET_IMAGE = 19;
-    public static final int SVPL_GET_IMAGE = 20;
+    public static final int PLSV_GET_CARD_STATE = 19;
+    public static final int SVPL_GET_CARD_STATE = 20;
     public static final int PLSV_GAME_READY = 21;
     public static final int SVPL_GAME_READY = 22;
     public static final int SVPL_GAME_START = 23;

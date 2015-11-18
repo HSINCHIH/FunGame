@@ -554,6 +554,16 @@ public class MainServer implements IReceiveMsgCallBack {
             }
             newMsg.Args.add("1");//Success
             m_LocalControlEP.Send(newMsg, ep);
+            //Check send monitor or not
+            if (m_MonitorEP != null && m_WatchRoom.equals(roomNum)) {
+                //Send to monitor
+                newMsg = new BaseMessage();
+                newMsg.Action = ServerAction.SVMO_SETP;
+                newMsg.Args.add(playerNum);
+                newMsg.Args.add(step);
+                newMsg.Args.add(state);
+                m_LocalControlEP.Send(newMsg, m_MonitorEP);
+            }
             //Check game over or not 
             String patternStr = "(\"Open\":[1])";
             Pattern pattern = Pattern.compile(patternStr);
@@ -656,7 +666,7 @@ public class MainServer implements IReceiveMsgCallBack {
     private void MOSV_LOAD_ROOM_STATE_recv(BaseMessage msg, EndPoint ep) {
         try {
             String roomNum = msg.Args.get(0);
-            String sql = String.format("SELECT T1.PlayerNum, T2.PlayerName, T1.Step, T1.State, T1.RecordTime FROM `Record` AS T1, `Player` AS T2 WHERE EXISTS(SELECT MAX(RecordNum) AS `LatestNum`, `PlayerNum`, `RoomNum` FROM `Record` GROUP BY `PlayerNum` HAVING `RoomNum` = %s AND T1.RecordNum = `LatestNum`) AND T1.PlayerNum = T2.PlayerNum;", roomNum);
+            String sql = String.format("SELECT T1.PlayerNum, T3.PlayerName, T1.Step, T1.State FROM `Record` AS T1 JOIN (SELECT MAX(`RecordNum`) AS `LatestNum`,PlayerNum FROM `Record` WHERE `RoomNum` = %s GROUP BY `PlayerNum`) AS T2 ON T1.RecordNum = T2.LatestNum  LEFT JOIN `Player` AS T3 on T2.PlayerNum = T3.PlayerNum;", roomNum);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVMO_LOAD_ROOM_STATE;

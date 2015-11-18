@@ -68,6 +68,11 @@ GameMonitor.prototype = {
                     this.LoadRoomState(recvMsg);
                 }
                 break;
+            case ServerAction.SVMO_SETP:
+                {
+                    this.ApplyStep(recvMsg.Args[0], recvMsg.Args[1]);
+                }
+                break;
             default:
                 {
                     console.log("unknow message : " + recvMsg.GetString());
@@ -190,13 +195,6 @@ GameMonitor.prototype = {
         //Toggle form
         $("#DLG_Watch_Room").modal("toggle");
     },
-    WatchRoom: function (roomNum, roomName)
-    {
-        var newMsg = new Message();
-        newMsg.Action = ServerAction.MOSV_WATCH_ROOM;
-        newMsg.Args.push(roomNum);
-        this.Send(newMsg);
-    },
     ShowWatchRoomList: function (rawData)
     {
         var roomList = eval(rawData);
@@ -205,6 +203,15 @@ GameMonitor.prototype = {
         {
             $('#GD_Room_List tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
         }
+    },
+    WatchRoom: function (roomNum, roomName)
+    {
+        this.m_RoomState = [];
+        $("#DIV_Game").empty();
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_WATCH_ROOM;
+        newMsg.Args.push(roomNum);
+        this.Send(newMsg);
     },
     LoadRoomState: function (recvMsg)
     {
@@ -253,6 +260,8 @@ GameMonitor.prototype = {
     },
     ApplyStep: function (playerNum, step)
     {
+        if (step === "empty")
+            return;
         var selectCard = $(StringFormat("#card_{0}_{1}", playerNum, step));
         this.m_RoomState[playerNum].ClickCards.push(step);
         selectCard.data("Open", 1);
@@ -293,24 +302,9 @@ GameMonitor.prototype = {
             }, 500);
         }
     },
-    CreateCard1: function ()
-    {
-        var twoSide = ["Left", "Right"];
-        for (var i = 0; i < twoSide.length; i++)
-        {
-            $("#DIV_" + twoSide[i]).css({"border": "1px solid #F0F0F0"});
-            $("#DIV_" + twoSide[i]).append('<div class="col-md-12 col-xs-12">Player : </div>');
-            for (var j = 0; j < 16; j++)
-            {
-                var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}_{1}", twoSide[i].substring(0, 2), DigitFormat(j, 2)) + '" on onclick="monitor.OnCardClick(\'' + StringFormat("{0}_{1}", twoSide[i].substring(0, 2), DigitFormat(j, 2)) + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/00.png" alt="" id="' + StringFormat("image_{0}_{1}", twoSide[i].substring(0, 2), DigitFormat(j, 2)) + '" class="img-responsive center-block"/></div></div></div></div>';
-                $("#DIV_" + twoSide[i]).append(test);
-            }
-        }
-    },
     Init: function ()
     {
-        //this.CreateCard();
-        this.m_RoomState = [];
+
         this.m_Socket = new WrapWebSocket();
         this.m_Socket.m_Event.AddListener("onOpen", BindWrapper(this, this.OnOpen));
         this.m_Socket.m_Event.AddListener("onReceive", BindWrapper(this, this.OnReceive));

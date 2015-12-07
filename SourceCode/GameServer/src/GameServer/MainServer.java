@@ -6,6 +6,7 @@
 package GameServer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -215,7 +216,8 @@ public class MainServer implements IReceiveMsgCallBack {
             String playerNum = msg.Args.get(0);
             String roomName = msg.Args.get(1);
             String roomPW = msg.Args.get(2);
-            String description = msg.Args.get(3);
+            String gameLevel = msg.Args.get(3);
+            String description = msg.Args.get(4);
             //Check if name is exist or not
             String sql = String.format("SELECT * FROM `Room` WHERE `RoomName`='%s';", roomName);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
@@ -227,7 +229,7 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_LocalControlEP.Send(newMsg, ep);
                 return;
             }
-            sql = String.format("INSERT INTO `Room` (`RoomName`, `RoomPW`,`Description`, `GameNum`, `CreateBy`) VALUES ('%s', '%s', '%s', %s, %s);", roomName, roomPW, description, "1", playerNum);
+            sql = String.format("INSERT INTO `Room` (`RoomName`, `RoomPW`, `GameLevel`, `Description`, `GameNum`, `CreateBy`) VALUES ('%s', '%s', %s, '%s', %s, %s);", roomName, roomPW, gameLevel, description, "1", playerNum);
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Insert fail
                 newMsg.Args.add("0");//Fail
@@ -456,24 +458,26 @@ public class MainServer implements IReceiveMsgCallBack {
         }
     }
 
-    private String CreateCardState() {
-        ArrayList<Integer> sourceItems = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            sourceItems.add(i);
-        }
-        ArrayList<Integer> pickItems = new ArrayList<>();
+    private static String CreateCardState(int level) {
+        ArrayList<String> sourceItems = new ArrayList<>();
+        sourceItems.addAll(Arrays.asList("1070", "RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
+        ArrayList<String> pickItems = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             int index = (int) (Math.random() * sourceItems.size());
-            int item = sourceItems.get(index);
-            pickItems.add(item);
-            pickItems.add(item);
+            String item = sourceItems.get(index);
+            pickItems.add(String.format("%s_%d", item, 0));
+            if (level == 0) {
+                pickItems.add(String.format("%s_%d", item, 0));
+            } else {
+                pickItems.add(String.format("%s_%d", item, 1));
+            }
             sourceItems.remove(index);
         }
         StringBuilder sb = new StringBuilder();
         int orderIndex = 0;
         while (!pickItems.isEmpty()) {
             int index = (int) (Math.random() * pickItems.size());
-            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%02d\",\"Open\":0,\"Click\":0},", orderIndex, pickItems.get(index)));
+            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%s\",\"Open\":0,\"Click\":0,\"Content\":\"%s\"},", orderIndex, pickItems.get(index), pickItems.get(index).split("_")[0]));
             pickItems.remove(index);
             orderIndex++;
         }
@@ -484,8 +488,11 @@ public class MainServer implements IReceiveMsgCallBack {
         try {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
-            String jsonSetting = CreateCardState();
-            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `State`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
+            String sql = String.format("SELECT `GameLevel` FROM `Room` WHERE `RoomNum` = %s;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            int gameLevel = Integer.parseInt(rs.get(0)[0]);
+            String jsonSetting = CreateCardState(gameLevel);
+            sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `State`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GET_CARD_STATE;
             if (m_DBHandler.Execute(sql) <= 0) {

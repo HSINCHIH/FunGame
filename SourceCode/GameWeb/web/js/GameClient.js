@@ -14,6 +14,7 @@ GameClient.prototype = {
     m_PlayerNum: "",
     m_RoomName: "",
     m_RoomNum: "",
+    m_GameLevel: -1,
     m_ClickInterval: 300,
     m_PrevClickTick: 0,
     m_ClickCards: null,
@@ -359,6 +360,10 @@ GameClient.prototype = {
     {
         $("#DLG_Create_Room").modal("toggle");
     },
+    SelectGameLevel: function (level)
+    {
+        this.m_GameLevel = parseInt(level);
+    },
     CreateRoom: function ()
     {
         //Disable button
@@ -371,6 +376,7 @@ GameClient.prototype = {
         newMsg.Args.push(this.m_PlayerNum);
         newMsg.Args.push(roomName);
         newMsg.Args.push(roomPW);
+        newMsg.Args.push(this.m_GameLevel);
         newMsg.Args.push(description);
         this.Send(newMsg);
     },
@@ -470,30 +476,16 @@ GameClient.prototype = {
                     $("#DLG_Count_Down").modal("toggle");
                     for (var i = 0; i <= 16; i++)
                     {
-                        if (i < 10)
-                        {
-                            //flip card to front
-                            $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
-                            $("#card0" + i).closest('.card').css('transform', 'rotatey(-180deg)');
-                            continue;
-                        }
                         //flip card to front
-                        $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
-                        $("#card" + i).closest('.card').css('transform', 'rotatey(-180deg)');
+                        $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                        $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(-180deg)');
                     }
                     setTimeout(function () {
                         for (var i = 0; i <= 16; i++)
                         {
-                            if (i < 10)
-                            {
-                                //flip card to front
-                                $("#card0" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
-                                $("#card0" + i).closest('.card').css('transform', 'rotatey(0deg)');
-                                continue;
-                            }
                             //flip card to front
-                            $("#card" + i).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
-                            $("#card" + i).closest('.card').css('transform', 'rotatey(0deg)');
+                            $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                            $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
                         self.m_CanClickCard = true;
                     }, 1000);
@@ -513,7 +505,7 @@ GameClient.prototype = {
     },
     CreateDefaultCards: function ()
     {
-        var jsonString = '[{"Card":"00","Img":"08","Open":0,"Click":0},{"Card":"01","Img":"07","Open":0,"Click":0},{"Card":"02","Img":"07","Open":0,"Click":0},{"Card":"03","Img":"03","Open":0,"Click":0},{"Card":"04","Img":"06","Open":0,"Click":0},{"Card":"05","Img":"02","Open":0,"Click":0},{"Card":"06","Img":"06","Open":0,"Click":0},{"Card":"07","Img":"05","Open":0,"Click":0},{"Card":"08","Img":"04","Open":0,"Click":0},{"Card":"09","Img":"05","Open":0,"Click":0},{"Card":"10","Img":"02","Open":0,"Click":0},{"Card":"11","Img":"04","Open":0,"Click":0},{"Card":"12","Img":"01","Open":0,"Click":0},{"Card":"13","Img":"03","Open":0,"Click":0},{"Card":"14","Img":"08","Open":0,"Click":0},{"Card":"15","Img":"01","Open":0,"Click":0}]';
+        var jsonString = '[{"Card":"00","Img":"1500_0","Open":0,"Click":0,"Content":"1500"},{"Card":"01","Img":"8400_1","Open":0,"Click":0,"Content":"8400"},{"Card":"02","Img":"1500_1","Open":0,"Click":0,"Content":"1500"},{"Card":"03","Img":"9600_0","Open":0,"Click":0,"Content":"9600"},{"Card":"04","Img":"CP50_1","Open":0,"Click":0,"Content":"CP50"},{"Card":"05","Img":"9700_1","Open":0,"Click":0,"Content":"9700"},{"Card":"06","Img":"9600_1","Open":0,"Click":0,"Content":"9600"},{"Card":"07","Img":"1704_1","Open":0,"Click":0,"Content":"1704"},{"Card":"08","Img":"9700_0","Open":0,"Click":0,"Content":"9700"},{"Card":"09","Img":"8300_1","Open":0,"Click":0,"Content":"8300"},{"Card":"10","Img":"1560_0","Open":0,"Click":0,"Content":"1560"},{"Card":"11","Img":"1704_0","Open":0,"Click":0,"Content":"1704"},{"Card":"12","Img":"1560_1","Open":0,"Click":0,"Content":"1560"},{"Card":"13","Img":"8400_0","Open":0,"Click":0,"Content":"8400"},{"Card":"14","Img":"8300_0","Open":0,"Click":0,"Content":"8300"},{"Card":"15","Img":"CP50_0","Open":0,"Click":0,"Content":"CP50"}]';
         //this.SetupCards(jsonString);
         this.LoadRoomState(jsonString);
     },
@@ -554,6 +546,7 @@ GameClient.prototype = {
             card.data("Open", item.Open);
             card.data("Click", item.Click);
             card.data("Img", item.Img);
+            card.data("Content", item.Content);
         }
     },
     ApplyStep: function (step)
@@ -605,7 +598,7 @@ GameClient.prototype = {
             setTimeout(function () {
                 var selectCard1 = $(StringFormat("#card_{0}", self.m_ClickCards[0]));
                 var selectCard2 = $(StringFormat("#card_{0}", self.m_ClickCards[1]));
-                if (selectCard1.data("Img") === selectCard2.data("Img"))
+                if (selectCard1.data("Content") === selectCard2.data("Content"))
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
@@ -646,7 +639,7 @@ GameClient.prototype = {
         $(".card").each(function () {
             var item = $(this);
             var id = item.attr('id').substring(4, 7);
-            var info = {"Card": item.data("Card"), "Img": item.data("Img"), "Open": item.data("Open"), "Click": item.data("Click")};
+            var info = {"Card": item.data("Card"), "Img": item.data("Img"), "Open": item.data("Open"), "Click": item.data("Click"), "Content": item.data("Content")};
             cardState.push(info);
         });
         return JSON.stringify(cardState);

@@ -158,6 +158,16 @@ and open the template in the editor.
                                     <label for="TB_Create_Room_PW">Password</label>
                                     <input type="password" class="form-control" id="TB_Create_Room_PW"/>
                                 </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button" id="DD_Level" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                        Game Level
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="DD_Level">
+                                        <li><a href="#" onclick="client.SelectGameLevel('0')">Level 0</a></li>
+                                        <li><a href="#"  onclick="client.SelectGameLevel('1')">Level 1</a></li>
+                                    </ul>
+                                </div>
                                 <div class="form-group">
                                     <label for="TB_Create_Room_Description">Description</label>
                                     <input type="text" class="form-control" id="TB_Create_Room_Description"/>

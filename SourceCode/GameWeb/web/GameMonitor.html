@@ -43,8 +43,9 @@ and open the template in the editor.
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
-                                <li ><a href="#">Home</a></li>
-                                <li><a href="#" onclick="monitor.OpenWatchRoomDialog()"> Watch Room</a></li>                                
+                                <li ><a href="#"> Home</a></li>
+                                <li><a href="#" onclick="monitor.OpenWatchRoomDialog()"> Watch Room</a></li> 
+                                 <li><a href="#" onclick="monitor.OpenGameHistoryDialog()"> Game History</a></li>  
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick=""><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
@@ -116,6 +117,28 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Count down-->
+            <div class="modal fade" id="DLG_Game_History"><!-- Game history-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1>Game Result</h1>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table" id="GRID_Game_History">
+                                <thead>
+                                    <tr>
+                                        <th>Room Name</th>
+                                        <th>Winner</th>
+                                        <th>Use Seconds</th>
+                                    </tr>
+                                </thead>
+                                <tbody>      
+                                </tbody>
+                            </table>                           
+                        </div>                          
+                    </div>
+                </div>
+            </div><!-- Game history-->
         </div>
         <!-- Bootstrap core JavaScript
            ================================================== -->

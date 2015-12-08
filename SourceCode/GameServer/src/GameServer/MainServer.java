@@ -100,6 +100,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 MOSV_LOAD_ROOM_STATE_recv(msg, ep);
             }
             break;
+            case ServerAction.MOSV_GAME_HISTORY: {
+                MOSV_GAME_HISTORY_recv(msg, ep);
+            }
+            break;
             default: {
                 m_Log.Writeln(String.format("%s UnKnown message : %s", "ReceiveMsg", msg.toString()));
             }
@@ -738,6 +742,24 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "MOSV_LOAD_ROOM_STATE_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_GAME_HISTORY_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String sql = String.format("SELECT T3.RoomName, T4.PlayerName AS Winner, TIMESTAMPDIFF(SECOND,MIN(T1.RecordTime),MAX(T1.RecordTime)) AS `UseSeconds` FROM `Record` AS T1 INNER JOIN (SELECT `PlayerNum`, `RoomNum` FROM `RoomPlayer` WHERE `Winner` > 0) AS T2 INNER JOIN `Room` AS T3 INNER JOIN `Player` AS T4 ON T1.PlayerNum = T2.PlayerNum AND T1.RoomNum = T2.RoomNum AND T1.RoomNum = T3.RoomNum AND T1.PlayerNum = T4.PlayerNum GROUP BY T1.RoomNum;");
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_GAME_HISTORY;
+            newMsg.Args.add("1");//Success
+            for (String[] cols : rs) {
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
+            }
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GAME_RESULT_recv", e.getMessage()));
         }
     }
 }

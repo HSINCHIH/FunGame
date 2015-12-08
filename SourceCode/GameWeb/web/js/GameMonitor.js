@@ -89,6 +89,16 @@ GameMonitor.prototype = {
                     this.OpenCountDownDialog();
                 }
                 break;
+            case ServerAction.SVMO_GAME_HISTORY:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_GAME_HISTORY"));
+                        return;
+                    }
+                    this.LoadGameHistory(recvMsg);
+                }
+                break;
             default:
                 {
                     console.log("unknow message : " + recvMsg.GetString());
@@ -358,6 +368,21 @@ GameMonitor.prototype = {
                 });
             });
         });
+    },
+    OpenGameHistoryDialog: function ()
+    {
+        $("#DLG_Game_History").modal("toggle");
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_GAME_HISTORY;
+        this.Send(newMsg);
+    },
+    LoadGameHistory: function (recvMsg)
+    {
+        $('#GRID_Game_History tbody tr').remove();
+        for (var i = 1; i < recvMsg.Args.length; i += 3)
+        {
+            $('#GRID_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td></tr>');
+        }
     },
     Init: function ()
     {

@@ -54,6 +54,11 @@ GameClient.prototype = {
                     this.m_IsLogin = true;
                     this.CloseLoginDialog();
                     this.ShowWelcome(this.m_PlayerName);
+                    //Resume Game
+                    var newMsg = new Message();
+                    newMsg.Action = ServerAction.PLSV_RESUME_GAME;
+                    newMsg.Args.push(this.m_PlayerNum);
+                    this.Send(newMsg);
                 }
                 break;
             case ServerAction.SVPL_CREATE_ROOM:
@@ -195,6 +200,22 @@ GameClient.prototype = {
                         return;
                     }
                     this.OpenGameResultDialog(recvMsg.Args[1] === this.m_PlayerNum);
+                }
+                break;
+            case ServerAction.SVPL_RESUME_GAME:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log("SVPL_RESUME_GAME fail");
+                        return;
+                    }
+                    this.CleanState();
+                    this.m_RoomNum = recvMsg.Args[1];
+                    this.m_RoomName = recvMsg.Args[2];
+                    this.ShowRoom(this.m_RoomName);
+                    this.LoadRoomState(recvMsg.Args[4]);
+                    this.ApplyStep(recvMsg.Args[3]);
+                    this.m_CanClickCard = true;
                 }
                 break;
             default:
@@ -547,6 +568,16 @@ GameClient.prototype = {
             card.data("Click", item.Click);
             card.data("Img", item.Img);
             card.data("Content", item.Content);
+            if (item.Open)
+            {
+                //flip card to front
+                card.closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                card.closest('.card').css('transform', 'rotatey(-180deg)');
+            }
+            if (item.Click)
+            {
+                this.m_ClickCards[this.m_ClickCards.length] = item.Card;
+            }
         }
     },
     ApplyStep: function (step)

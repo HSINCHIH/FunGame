@@ -355,14 +355,12 @@ GameMonitor.prototype = {
                         }
                         self.m_CanClickCard = true;
                     }, 1000);
-
                 });
             });
         });
     },
     Init: function ()
     {
-
         this.m_Socket = new WrapWebSocket();
         this.m_Socket.m_Event.AddListener("onOpen", BindWrapper(this, this.OnOpen));
         this.m_Socket.m_Event.AddListener("onReceive", BindWrapper(this, this.OnReceive));

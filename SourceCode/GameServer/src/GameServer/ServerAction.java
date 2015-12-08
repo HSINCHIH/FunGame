@@ -49,4 +49,6 @@ public class ServerAction {
     public static final int SVMO_SETP = 35;
     public static final int SVMO_GAME_READY = 36;
     public static final int SVMO_GAME_START = 37;
+    public static final int PLSV_RESUME_GAME = 38;
+    public static final int SVPL_RESUME_GAME = 39;
 }

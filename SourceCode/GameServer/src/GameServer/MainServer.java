@@ -80,6 +80,10 @@ public class MainServer implements IReceiveMsgCallBack {
                 PLSV_OPERATOR_recv(msg, ep);
             }
             break;
+            case ServerAction.PLSV_RESUME_GAME: {
+                PLSV_RESUME_GAME_recv(msg, ep);
+            }
+            break;
             case ServerAction.MOSV_LOGIN: {
                 MOSV_LOGIN_recv(msg, ep);
             }
@@ -130,6 +134,32 @@ public class MainServer implements IReceiveMsgCallBack {
         m_LocalControlEP.Stop();
     }
 
+    private static String CreateCardState(int level) {
+        ArrayList<String> sourceItems = new ArrayList<>();
+        sourceItems.addAll(Arrays.asList("1070", "RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
+        ArrayList<String> pickItems = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int index = (int) (Math.random() * sourceItems.size());
+            String item = sourceItems.get(index);
+            pickItems.add(String.format("%s_%d", item, 0));
+            if (level == 0) {
+                pickItems.add(String.format("%s_%d", item, 0));
+            } else {
+                pickItems.add(String.format("%s_%d", item, 1));
+            }
+            sourceItems.remove(index);
+        }
+        StringBuilder sb = new StringBuilder();
+        int orderIndex = 0;
+        while (!pickItems.isEmpty()) {
+            int index = (int) (Math.random() * pickItems.size());
+            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%s\",\"Open\":0,\"Click\":0,\"Content\":\"%s\"},", orderIndex, pickItems.get(index), pickItems.get(index).split("_")[0]));
+            pickItems.remove(index);
+            orderIndex++;
+        }
+        return String.format("[%s]", sb.toString().substring(0, sb.length() - 1));
+    }
+
     private void DISCONNECTED_recv(BaseMessage msg, EndPoint ep) {
         if (m_MonitorEP != null && ep.toString().equals(m_MonitorEP.toString())) {
             m_MonitorEP = null;
@@ -147,6 +177,7 @@ public class MainServer implements IReceiveMsgCallBack {
         m_LocalControlEP.Remove(ep);
     }
 
+    //Player command
     private void PLSV_REGISTRY_recv(BaseMessage msg, EndPoint ep) {
         try {
             String name = msg.Args.get(0);
@@ -458,32 +489,6 @@ public class MainServer implements IReceiveMsgCallBack {
         }
     }
 
-    private static String CreateCardState(int level) {
-        ArrayList<String> sourceItems = new ArrayList<>();
-        sourceItems.addAll(Arrays.asList("1070", "RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
-        ArrayList<String> pickItems = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            int index = (int) (Math.random() * sourceItems.size());
-            String item = sourceItems.get(index);
-            pickItems.add(String.format("%s_%d", item, 0));
-            if (level == 0) {
-                pickItems.add(String.format("%s_%d", item, 0));
-            } else {
-                pickItems.add(String.format("%s_%d", item, 1));
-            }
-            sourceItems.remove(index);
-        }
-        StringBuilder sb = new StringBuilder();
-        int orderIndex = 0;
-        while (!pickItems.isEmpty()) {
-            int index = (int) (Math.random() * pickItems.size());
-            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%s\",\"Open\":0,\"Click\":0,\"Content\":\"%s\"},", orderIndex, pickItems.get(index), pickItems.get(index).split("_")[0]));
-            pickItems.remove(index);
-            orderIndex++;
-        }
-        return String.format("[%s]", sb.toString().substring(0, sb.length() - 1));
-    }
-
     private void PLSV_GET_CARD_STATE_recv(BaseMessage msg, EndPoint ep) {
         try {
             String playerNum = msg.Args.get(0);
@@ -636,6 +641,31 @@ public class MainServer implements IReceiveMsgCallBack {
         }
     }
 
+    private void PLSV_RESUME_GAME_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String playerNum = msg.Args.get(0);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_RESUME_GAME;
+            String sql = String.format("SELECT T1.RoomNum, T2.RoomName, T1.Step, T1.State FROM (SELECT * FROM `Record` WHERE `PlayerNum` = %s ORDER BY `RecordNum` DESC LIMIT 1) AS T1 INNER JOIN (SELECT * FROM `Room` WHERE `RoomState` < 3) AS T2 ON T1.RoomNum = T2.RoomNum;", playerNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_RESUME_GAME_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(rs.get(0)[0]);
+            newMsg.Args.add(rs.get(0)[1]);
+            newMsg.Args.add(rs.get(0)[2]);
+            newMsg.Args.add(rs.get(0)[3]);
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "PLSV_RESUME_GAME_recv", e.getMessage()));
+        }
+    }
+
+    //Monitor command
     private void MOSV_LOGIN_recv(BaseMessage msg, EndPoint ep) {
         try {
             String name = msg.Args.get(0);

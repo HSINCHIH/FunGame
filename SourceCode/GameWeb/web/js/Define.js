@@ -48,7 +48,9 @@ var ServerAction =
             SVMO_WATCH_ROOM: 32,
             MOSV_LOAD_ROOM_STATE: 33,
             SVMO_LOAD_ROOM_STATE: 34,
-            SVMO_SETP: 35
+            SVMO_SETP: 35,
+            SVMO_GAME_READY: 36,
+            SVMO_GAME_START: 37
         };
 
 

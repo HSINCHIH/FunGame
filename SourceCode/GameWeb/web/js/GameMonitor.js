@@ -11,6 +11,7 @@ GameMonitor.prototype = {
     m_IsLogin: false,
     m_WatchRoom: -1,
     m_RoomState: null,
+    m_PlayerList: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -52,6 +53,7 @@ GameMonitor.prototype = {
                     }
                     this.m_WatchRoom = recvMsg.Args[1];
                     this.CloseWatchRoomDialog();
+                    this.m_PlayerList = [];
                     var newMsg = new Message();
                     newMsg.Action = ServerAction.MOSV_LOAD_ROOM_STATE;
                     newMsg.Args.push(this.m_WatchRoom);
@@ -71,6 +73,20 @@ GameMonitor.prototype = {
             case ServerAction.SVMO_SETP:
                 {
                     this.ApplyStep(recvMsg.Args[0], recvMsg.Args[1]);
+                }
+                break;
+            case ServerAction.SVMO_GAME_READY:
+                {
+                    var newMsg = new Message();
+                    this.m_PlayerList = [];
+                    newMsg.Action = ServerAction.MOSV_LOAD_ROOM_STATE;
+                    newMsg.Args.push(this.m_WatchRoom);
+                    this.Send(newMsg);
+                }
+                break;
+            case ServerAction.SVMO_GAME_START:
+                {
+                    this.OpenCountDownDialog();
                 }
                 break;
             default:
@@ -238,6 +254,7 @@ GameMonitor.prototype = {
     },
     ApplyState: function (playerNum, cardState)
     {
+        this.m_PlayerList.push(playerNum);
         for (var i = 0; i < cardState.length; i++)
         {
             var item = cardState[i];
@@ -246,6 +263,7 @@ GameMonitor.prototype = {
             card.data("Open", item.Open);
             card.data("Click", item.Click);
             card.data("Img", item.Img);
+            card.data("Content", item.Content);
             if (item.Open)
             {
                 //flip card to front
@@ -276,7 +294,7 @@ GameMonitor.prototype = {
             setTimeout(function () {
                 var selectCard1 = $(StringFormat("#card_{0}_{1}", playerNum, self.m_RoomState[playerNum].ClickCards[0]));
                 var selectCard2 = $(StringFormat("#card_{0}_{1}", playerNum, self.m_RoomState[playerNum].ClickCards[1]));
-                if (selectCard1.data("Img") === selectCard2.data("Img"))
+                if (selectCard1.data("Content") === selectCard2.data("Content"))
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
@@ -301,6 +319,46 @@ GameMonitor.prototype = {
                 self.m_RoomState[playerNum].ClickCards = [];
             }, 500);
         }
+    },
+    OpenCountDownDialog: function ()
+    {
+        var self = this;
+        $("#DLG_Count_Down").modal("toggle");
+        $("#IMG_CountDown").attr("src", "images/num03.jpg");
+        $("#IMG_CountDown").css({opacity: 1});
+        $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+            $("#IMG_CountDown").attr("src", "images/num02.jpg");
+            $("#IMG_CountDown").css({opacity: 1});
+            $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                $("#IMG_CountDown").attr("src", "images/num01.jpg");
+                $("#IMG_CountDown").css({opacity: 1});
+                $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
+                    $("#DLG_Count_Down").modal("toggle");
+                    for (var i = 0; i < self.m_PlayerList.length; i++)
+                    {
+                        for (var j = 0; j <= 16; j++)
+                        {
+                            //flip card to front
+                            $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
+                            $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('transform', 'rotatey(-180deg)');
+                        }
+                    }
+                    setTimeout(function () {
+                        for (var i = 0; i < self.m_PlayerList.length; i++)
+                        {
+                            for (var j = 0; j <= 16; j++)
+                            {
+                                //flip card to front
+                                $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
+                                $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('transform', 'rotatey(0deg)');
+                            }
+                        }
+                        self.m_CanClickCard = true;
+                    }, 1000);
+
+                });
+            });
+        });
     },
     Init: function ()
     {

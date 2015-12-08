@@ -537,6 +537,13 @@ public class MainServer implements IReceiveMsgCallBack {
             if (rs.get(0)[0].equals("0")) {
                 return;
             }
+            //Notify Monitor
+            if (m_WatchRoom.equals(roomNum)) {
+                newMsg = new BaseMessage();
+                newMsg.Action = ServerAction.SVMO_GAME_READY;
+                newMsg.Args.add(roomNum);
+                m_LocalControlEP.Send(newMsg, m_MonitorEP);
+            }
             newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GAME_START;
             sql = String.format("SELECT T1.EndPoint FROM `Player` AS T1,`RoomPlayer` AS T2 WHERE T1.Online = %d AND T1.PlayerNum = T2.PlayerNum AND T2.RoomNum = %s AND T2.Enable = %d;", 1, roomNum, 1);
@@ -544,6 +551,12 @@ public class MainServer implements IReceiveMsgCallBack {
             for (String[] cols : rs) {
                 EndPoint sendEp = new EndPoint(cols[0]);
                 m_LocalControlEP.Send(newMsg, sendEp);
+            }
+            //Notify Monitor
+            if (m_WatchRoom.equals(roomNum)) {
+                newMsg = new BaseMessage();
+                newMsg.Action = ServerAction.SVMO_GAME_START;
+                m_LocalControlEP.Send(newMsg, m_MonitorEP);
             }
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GAME_READY_recv", e.getMessage()));

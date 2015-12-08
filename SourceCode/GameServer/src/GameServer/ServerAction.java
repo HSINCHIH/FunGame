@@ -47,4 +47,6 @@ public class ServerAction {
     public static final int MOSV_LOAD_ROOM_STATE = 33;
     public static final int SVMO_LOAD_ROOM_STATE = 34;
     public static final int SVMO_SETP = 35;
+    public static final int SVMO_GAME_READY = 36;
+    public static final int SVMO_GAME_START = 37;
 }

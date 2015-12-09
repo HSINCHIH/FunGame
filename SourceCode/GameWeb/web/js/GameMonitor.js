@@ -12,6 +12,9 @@ GameMonitor.prototype = {
     m_WatchRoom: -1,
     m_RoomState: null,
     m_PlayerList: null,
+    m_ReplayStep: null,
+    m_ReplayIndex: 0,
+    m_ReplayHandle: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -67,7 +70,7 @@ GameMonitor.prototype = {
                         console.log(StringFormat("{0} fail", "SVMO_LOAD_ROOM_STATE"));
                         return;
                     }
-                    this.LoadRoomState(recvMsg);
+                    this.LoadRoomState(recvMsg.Args);
                 }
                 break;
             case ServerAction.SVMO_SETP:
@@ -97,6 +100,38 @@ GameMonitor.prototype = {
                         return;
                     }
                     this.LoadGameHistory(recvMsg);
+                }
+                break;
+            case ServerAction.SVMO_GET_REPLAY_ROOM:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_GET_REPLAY_ROOM"));
+                        return;
+                    }
+                    this.LoadReplayRoom(recvMsg);
+                }
+                break;
+            case ServerAction.SVMO_GET_REPLAY_DATA:
+                {
+                    if (recvMsg.Args[0] === "0")
+                    {
+                        console.log(StringFormat("{0} fail", "SVMO_GET_REPLAY_DATA"));
+                        return;
+                    }
+                    var playerCount = parseInt(recvMsg.Args[1]);
+                    var stateInfo = [];
+                    stateInfo.push(recvMsg.Args[0]);
+                    for (var i = 2; i < 2 + playerCount * 4; i++)
+                    {
+                        stateInfo.push(recvMsg.Args[i]);
+                    }
+                    for (var i = 2 + playerCount * 4; i < recvMsg.Args.length; i++)
+                    {
+                        this.m_ReplayStep.push(recvMsg.Args[i]);
+                    }
+                    this.LoadRoomState(stateInfo);
+                    this.m_ReplayHandle = setInterval(BindWrapper(this, this.ReplayGame), 1000);
                 }
                 break;
             default:
@@ -239,14 +274,14 @@ GameMonitor.prototype = {
         newMsg.Args.push(roomNum);
         this.Send(newMsg);
     },
-    LoadRoomState: function (recvMsg)
+    LoadRoomState: function (args)
     {
-        for (var i = 1; i < recvMsg.Args.length; i += 4)
+        for (var i = 1; i < args.length; i += 4)
         {
-            var playerNum = recvMsg.Args[i + 0];
-            var playerName = recvMsg.Args[i + 1];
-            var step = recvMsg.Args[i + 2];
-            var state = recvMsg.Args[i + 3];
+            var playerNum = args[i + 0];
+            var playerName = args[i + 1];
+            var step = args[i + 2];
+            var state = args[i + 3];
             var cardState = eval(state);
             $("#DIV_Game").append('<div id="' + StringFormat("DIV_{0}", playerNum) + '" class="col-md-6 col-xs-6"></div>');
             $("#DIV_" + playerNum).css({"border": "1px solid #F0F0F0"});
@@ -310,6 +345,8 @@ GameMonitor.prototype = {
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
                         selectCard1.data("Click", 0);
                         selectCard2.data("Click", 0);
+                        //reset array
+                        self.m_RoomState[playerNum].ClickCards = [];
                     });
                 }
                 else
@@ -324,9 +361,9 @@ GameMonitor.prototype = {
                         selectCard.data("Click", 0);
                         selectCard.data("Open", 0);
                     }
+                    //reset array
+                    self.m_RoomState[playerNum].ClickCards = [];
                 }
-                //reset array
-                self.m_RoomState[playerNum].ClickCards = [];
             }, 500);
         }
     },
@@ -363,7 +400,6 @@ GameMonitor.prototype = {
                                 $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                             }
                         }
-                        self.m_CanClickCard = true;
                     }, 1000);
                 });
             });
@@ -371,18 +407,69 @@ GameMonitor.prototype = {
     },
     OpenGameHistoryDialog: function ()
     {
-        $("#DLG_Game_History").modal("toggle");
         var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GAME_HISTORY;
         this.Send(newMsg);
-    },
-    LoadGameHistory: function (recvMsg)
+        //Toggle form
+        $("#DLG_Game_History").modal("toggle");
+    }, LoadGameHistory: function (recvMsg)
     {
-        $('#GRID_Game_History tbody tr').remove();
+        $('#GD_Game_History tbody tr').remove();
         for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GRID_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td></tr>');
+            $('#GD_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td></tr>');
         }
+    },
+    OpenReplayRoomDialog: function ()
+    {
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_GET_REPLAY_ROOM;
+        this.Send(newMsg);
+        //Toggle form
+        $("#DLG_Replay_Room").modal("toggle");
+    },
+    CloseReplayRoomDialog: function ()
+    {
+        //Toggle form
+        $("#DLG_Replay_Room").modal("toggle");
+    },
+    LoadReplayRoom: function (recvMsg)
+    {
+        $('#GD_Replay_Room tbody tr').remove();
+        for (var i = 1; i < recvMsg.Args.length; i += 3)
+        {
+            $('#GD_Replay_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="button" class="btn btn-default" value="Replay" onclick="monitor.GetReplayData(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
+        }
+    },
+    GetReplayData: function (roomNum, roomName)
+    {
+        this.m_RoomState = [];
+        this.m_PlayerList = [];
+        this.m_ReplayStep = [];
+        this.m_ReplayIndex = 0;
+        $("#DIV_Game").empty();
+        this.CloseReplayRoomDialog();
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.MOSV_GET_REPLAY_DATA;
+        newMsg.Args.push(roomNum);
+        this.Send(newMsg);
+    },
+    ReplayGame: function ()
+    {
+        console.log("ReplayGame");
+        if (this.m_ReplayIndex >= (this.m_ReplayStep.length / 2))
+        {
+            clearInterval(this.m_ReplayHandle);
+            return;
+        }
+        var playerNum = parseInt(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0]);
+        if (this.m_RoomState[playerNum].ClickCards.length === 2)
+        {
+            return;
+        }
+        this.ApplyStep(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0], this.m_ReplayStep[this.m_ReplayIndex * 2 + 1]);
+        this.m_ReplayIndex++;
+        console.log("this.m_ReplayIndex : " + this.m_ReplayIndex);
     },
     Init: function ()
     {

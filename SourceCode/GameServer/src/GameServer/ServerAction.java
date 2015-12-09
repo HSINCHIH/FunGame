@@ -53,4 +53,8 @@ public class ServerAction {
     public static final int SVPL_RESUME_GAME = 39;
     public static final int MOSV_GAME_HISTORY = 40;
     public static final int SVMO_GAME_HISTORY = 41;
+    public static final int MOSV_GET_REPLAY_ROOM = 42;
+    public static final int SVMO_GET_REPLAY_ROOM = 43;
+    public static final int MOSV_GET_REPLAY_DATA = 44;
+    public static final int SVMO_GET_REPLAY_DATA = 45;
 }

@@ -104,6 +104,14 @@ public class MainServer implements IReceiveMsgCallBack {
                 MOSV_GAME_HISTORY_recv(msg, ep);
             }
             break;
+            case ServerAction.MOSV_GET_REPLAY_ROOM: {
+                MOSV_GET_REPLAY_ROOM_recv(msg, ep);
+            }
+            break;
+            case ServerAction.MOSV_GET_REPLAY_DATA: {
+                MOSV_GET_REPLAY_DATA_recv(msg, ep);
+            }
+            break;
             default: {
                 m_Log.Writeln(String.format("%s UnKnown message : %s", "ReceiveMsg", msg.toString()));
             }
@@ -760,6 +768,64 @@ public class MainServer implements IReceiveMsgCallBack {
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GAME_RESULT_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_GET_REPLAY_ROOM_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String sql = String.format("SELECT `RoomNum`, `RoomName`, `GameLevel` FROM `Room` WHERE `RoomState` = 3;");
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_GET_REPLAY_ROOM;
+            newMsg.Args.add("1");//Success
+            for (String[] cols : rs) {
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
+            }
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GET_REPLAY_ROOM_recv", e.getMessage()));
+        }
+    }
+
+    private void MOSV_GET_REPLAY_DATA_recv(BaseMessage msg, EndPoint ep) {
+        try {
+            String roomNum = msg.Args.get(0);
+            String sql = String.format("SELECT T1.PlayerNum, T3.PlayerName, T1.Step, T1.State FROM `Record` AS T1 JOIN (SELECT MIN(`RecordNum`) AS `LatestNum`,PlayerNum FROM `Record` WHERE `RoomNum` = %s GROUP BY `PlayerNum`) AS T2 ON T1.RecordNum = T2.LatestNum  LEFT JOIN `Player` AS T3 on T2.PlayerNum = T3.PlayerNum;", roomNum);
+            BaseMessage newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVMO_GET_REPLAY_DATA;
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "MOSV_GET_REPLAY_DATA_recv", sql));
+                return;
+            }
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(String.format("%d", rs.size()));
+            for (String[] cols : rs) {
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
+                newMsg.Args.add(cols[3]);
+            }
+            sql = String.format("SELECT `PlayerNum`, `Step` FROM `Record` WHERE `RoomNum` = %s  AND `Step` <> 'empty' ORDER BY `RecordNum`;", roomNum);
+            rs = m_DBHandler.ExecuteQuery(sql);
+            if (rs.size() <= 0) {
+                newMsg.Args.clear();
+                newMsg.Args.add("0");//Fail
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, sql : %s", "MOSV_GET_REPLAY_DATA_recv", sql));
+                return;
+            }
+            for (String[] cols : rs) {
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+            }
+            m_LocalControlEP.Send(newMsg, ep);
+        } catch (Exception e) {
+            m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GET_REPLAY_DATA_recv", e.getMessage()));
         }
     }
 }

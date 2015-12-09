@@ -45,7 +45,8 @@ and open the template in the editor.
                             <ul class="nav navbar-nav">
                                 <li ><a href="#"> Home</a></li>
                                 <li><a href="#" onclick="monitor.OpenWatchRoomDialog()"> Watch Room</a></li> 
-                                 <li><a href="#" onclick="monitor.OpenGameHistoryDialog()"> Game History</a></li>  
+                                <li><a href="#" onclick="monitor.OpenGameHistoryDialog()"> Game History</a></li>
+                                <li><a href="#" onclick="monitor.OpenReplayRoomDialog()"> Game Replay</a></li> 
                             </ul>
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick=""><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
@@ -87,17 +88,17 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Login-->
-            <div class="modal fade" id="DLG_Watch_Room"><!-- Join room-->
+            <div class="modal fade" id="DLG_Watch_Room"><!-- Watch room-->
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1>Available Room</h1>
+                            <h1>Available Watch Room</h1>
                         </div>
                         <div class="modal-body">
                             <table class="table" id="GD_Room_List">
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
+                                        <th>Room Name</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -107,7 +108,7 @@ and open the template in the editor.
                         </div>                          
                     </div>
                 </div>
-            </div><!-- Join room-->
+            </div><!-- Watch room-->
             <div class="modal fade" id="DLG_Count_Down"><!-- Count down-->
                 <div class="modal-dialog">
                     <div class="modal-content">                      
@@ -124,7 +125,7 @@ and open the template in the editor.
                             <h1>Game Result</h1>
                         </div>
                         <div class="modal-body">
-                            <table class="table" id="GRID_Game_History">
+                            <table class="table" id="GD_Game_History">
                                 <thead>
                                     <tr>
                                         <th>Room Name</th>
@@ -139,6 +140,28 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Game history-->
+            <div class="modal fade" id="DLG_Replay_Room"><!-- Replay room-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1>Available Replay Room</h1>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table" id="GD_Replay_Room">
+                                <thead>
+                                    <tr>
+                                        <th>Room Name</th>
+                                        <th>Level</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>      
+                                </tbody>
+                            </table>
+                        </div>                          
+                    </div>
+                </div>
+            </div><!-- Watch room-->
         </div>
         <!-- Bootstrap core JavaScript
            ================================================== -->

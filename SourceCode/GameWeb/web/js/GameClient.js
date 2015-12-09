@@ -215,7 +215,6 @@ GameClient.prototype = {
                     this.ShowRoom(this.m_RoomName);
                     this.LoadRoomState(recvMsg.Args[4]);
                     this.ApplyStep(recvMsg.Args[3]);
-                    this.m_CanClickCard = true;
                 }
                 break;
             default:
@@ -508,7 +507,6 @@ GameClient.prototype = {
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
-                        self.m_CanClickCard = true;
                     }, 1000);
                 });
             });
@@ -583,10 +581,6 @@ GameClient.prototype = {
     ApplyStep: function (step)
     {
         console.log("ApplyStep");
-        if (!this.m_CanClickCard)
-        {
-            return;
-        }
         //Check interval
         var curTick = (new Date()).getTime();
         //console.log(curTick - this.m_PrevClickTick);
@@ -625,7 +619,6 @@ GameClient.prototype = {
         var self = this;
         if (this.m_ClickCards.length === 2)
         {
-            this.m_CanClickCard = false;
             setTimeout(function () {
                 var selectCard1 = $(StringFormat("#card_{0}", self.m_ClickCards[0]));
                 var selectCard2 = $(StringFormat("#card_{0}", self.m_ClickCards[1]));
@@ -633,9 +626,10 @@ GameClient.prototype = {
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
-                        self.m_CanClickCard = true;
                         selectCard1.data("Click", 0);
                         selectCard2.data("Click", 0);
+                        //reset array
+                        self.m_ClickCards = [];
                     });
                 }
                 else
@@ -650,10 +644,9 @@ GameClient.prototype = {
                         selectCard.data("Click", 0);
                         selectCard.data("Open", 0);
                     }
-                    self.m_CanClickCard = true;
+                    //reset array
+                    self.m_ClickCards = [];
                 }
-                //reset array
-                self.m_ClickCards = [];
             }, 500);
         }
         this.m_PrevClickTick = curTick;
@@ -661,7 +654,6 @@ GameClient.prototype = {
     CleanState: function ()
     {
         $("#DIV_Game").empty();
-        self.m_CanClickCard = false;
         this.m_ClickCards = [];
     },
     GetState: function ()

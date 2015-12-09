@@ -702,16 +702,17 @@ public class MainServer implements IReceiveMsgCallBack {
 
     private void MOSV_GET_ENABLE_ROOM_recv(BaseMessage msg, EndPoint ep) {
         try {
-            String sql = String.format("SELECT `RoomNum`,`RoomName` FROM `Room` WHERE `RoomState` < %d;", 3);
+            String sql = String.format("SELECT `RoomNum`, `RoomName`, `GameLevel` FROM `Room` WHERE `RoomState` < %d;", 3);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVMO_GET_ENABLE_ROOM;
             StringBuilder sb = new StringBuilder();
             newMsg.Args.add("1");//Success
             for (String[] cols : rs) {
-                sb.append(String.format("{RoomNum:\"%s\",RoomName:\"%s\"},", cols[0], cols[1]));
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
             }
-            newMsg.Args.add(String.format("[%s]", sb.toString().substring(0, sb.length() - 1)));
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "MOSV_GET_ENABLE_ROOM_recv", e.getMessage()));
@@ -755,7 +756,7 @@ public class MainServer implements IReceiveMsgCallBack {
 
     private void MOSV_GAME_HISTORY_recv(BaseMessage msg, EndPoint ep) {
         try {
-            String sql = String.format("SELECT T3.RoomName, T4.PlayerName AS Winner, TIMESTAMPDIFF(SECOND,MIN(T1.RecordTime),MAX(T1.RecordTime)) AS `UseSeconds` FROM `Record` AS T1 INNER JOIN (SELECT `PlayerNum`, `RoomNum` FROM `RoomPlayer` WHERE `Winner` > 0) AS T2 INNER JOIN `Room` AS T3 INNER JOIN `Player` AS T4 ON T1.PlayerNum = T2.PlayerNum AND T1.RoomNum = T2.RoomNum AND T1.RoomNum = T3.RoomNum AND T1.PlayerNum = T4.PlayerNum GROUP BY T1.RoomNum;");
+            String sql = String.format("SELECT T3.RoomName, T3.GameLevel, T4.PlayerName AS Winner, TIMESTAMPDIFF(SECOND,MIN(T1.RecordTime),MAX(T1.RecordTime)) AS `UseSeconds` FROM `Record` AS T1 INNER JOIN (SELECT `PlayerNum`, `RoomNum` FROM `RoomPlayer` WHERE `Winner` > 0) AS T2 INNER JOIN `Room` AS T3 INNER JOIN `Player` AS T4 ON T1.PlayerNum = T2.PlayerNum AND T1.RoomNum = T2.RoomNum AND T1.RoomNum = T3.RoomNum AND T1.PlayerNum = T4.PlayerNum GROUP BY T1.RoomNum;");
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVMO_GAME_HISTORY;
@@ -764,6 +765,7 @@ public class MainServer implements IReceiveMsgCallBack {
                 newMsg.Args.add(cols[0]);
                 newMsg.Args.add(cols[1]);
                 newMsg.Args.add(cols[2]);
+                newMsg.Args.add(cols[3]);
             }
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {

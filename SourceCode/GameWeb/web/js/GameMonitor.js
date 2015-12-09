@@ -44,7 +44,7 @@ GameMonitor.prototype = {
                         console.log(StringFormat("{0} fail", "SVMO_GET_ENABLE_ROOM"));
                         return;
                     }
-                    this.ShowWatchRoomList(recvMsg.Args[1]);
+                    this.LoadWatchRoom(recvMsg);
                 }
                 break;
             case ServerAction.SVMO_WATCH_ROOM:
@@ -256,13 +256,12 @@ GameMonitor.prototype = {
         //Toggle form
         $("#DLG_Watch_Room").modal("toggle");
     },
-    ShowWatchRoomList: function (rawData)
+    LoadWatchRoom: function (recvMsg)
     {
-        var roomList = eval(rawData);
         $('#GD_Room_List tbody tr').remove();
-        for (var i = 0; i < roomList.length; i++)
+        for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GD_Room_List tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
+            $('#GD_Room_List tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
         }
     },
     WatchRoom: function (roomNum, roomName)
@@ -423,9 +422,9 @@ GameMonitor.prototype = {
     }, LoadGameHistory: function (recvMsg)
     {
         $('#GD_Game_History tbody tr').remove();
-        for (var i = 1; i < recvMsg.Args.length; i += 3)
+        for (var i = 1; i < recvMsg.Args.length; i += 4)
         {
-            $('#GD_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td></tr>');
+            $('#GD_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td>' + recvMsg.Args[i + 3] + '</td></tr>');
         }
     },
     OpenReplayRoomDialog: function ()

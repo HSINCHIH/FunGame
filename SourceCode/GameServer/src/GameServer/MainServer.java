@@ -146,9 +146,9 @@ public class MainServer implements IReceiveMsgCallBack {
         m_LocalControlEP.Stop();
     }
 
-    private static String CreateCardState(int level) {
+    private String CreateCardState(int level) {
         ArrayList<String> sourceItems = new ArrayList<>();
-        sourceItems.addAll(Arrays.asList("1070", "RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
+        sourceItems.addAll(Arrays.asList("RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
         ArrayList<String> pickItems = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             int index = (int) (Math.random() * sourceItems.size());

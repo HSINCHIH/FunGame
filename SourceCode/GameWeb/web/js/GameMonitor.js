@@ -477,10 +477,6 @@ GameMonitor.prototype = {
         this.ApplyStep(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0], this.m_ReplayStep[this.m_ReplayIndex * 2 + 1]);
         this.m_ReplayIndex++;
         console.log("this.m_ReplayIndex : " + this.m_ReplayIndex);
-        if (this.IsWinner(playerNum))
-        {
-            this.SetWinner(playerNum);
-        }
     },
     IsWinner: function (playerNum)
     {

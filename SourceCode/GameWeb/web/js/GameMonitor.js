@@ -347,6 +347,10 @@ GameMonitor.prototype = {
                         selectCard2.data("Click", 0);
                         //reset array
                         self.m_RoomState[playerNum].ClickCards = [];
+                        if (self.IsWinner(playerNum))
+                        {
+                            self.SetWinner(parseInt(playerNum));
+                        }
                     });
                 }
                 else
@@ -363,6 +367,10 @@ GameMonitor.prototype = {
                     }
                     //reset array
                     self.m_RoomState[playerNum].ClickCards = [];
+                    if (self.IsWinner(playerNum))
+                    {
+                        self.SetWinner(parseInt(playerNum));
+                    }
                 }
             }, 500);
         }
@@ -470,6 +478,38 @@ GameMonitor.prototype = {
         this.ApplyStep(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0], this.m_ReplayStep[this.m_ReplayIndex * 2 + 1]);
         this.m_ReplayIndex++;
         console.log("this.m_ReplayIndex : " + this.m_ReplayIndex);
+        if (this.IsWinner(playerNum))
+        {
+            this.SetWinner(playerNum);
+        }
+    },
+    IsWinner: function (playerNum)
+    {
+        var openCount = 0;
+        for (var i = 0; i < 16; i++)
+        {
+            var selectCard = $(StringFormat("#card_{0}_{1}", playerNum, DigitFormat(i, 2)));
+            openCount += parseInt(selectCard.data("Open"));
+        }
+        return openCount === 16;
+    },
+    SetWinner: function (playerNum)
+    {
+        $(".flip").each(function () {
+            $(this).hide();
+        });
+        for (var i = 0; i < this.m_PlayerList.length; i++)
+        {
+            var tempNum = parseInt(this.m_PlayerList[i]);
+            if (tempNum === playerNum)
+            {
+                $("#DIV_" + tempNum).append('<img src="images/you_win.jpg" alt="" class="img-responsive center-block"/>');
+            }
+            else
+            {
+                $("#DIV_" + tempNum).append('<img src="images/you_lose.jpg" alt="" class="img-responsive center-block"/>');
+            }
+        }
     },
     Init: function ()
     {

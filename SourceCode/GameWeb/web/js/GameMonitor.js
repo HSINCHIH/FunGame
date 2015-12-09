@@ -506,6 +506,10 @@ GameMonitor.prototype = {
             }
         }
     },
+    OpenAboutDialog: function ()
+    {
+        $("#DLG_About").modal("toggle");
+    },
     Init: function ()
     {
         this.m_Socket = new WrapWebSocket();

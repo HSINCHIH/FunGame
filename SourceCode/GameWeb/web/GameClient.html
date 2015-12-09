@@ -56,6 +56,7 @@ and open the template in the editor.
                             <ul class="nav navbar-nav navbar-right">
                                 <li><a href="#" onclick="client.OpenSignUpDialog()"><span class="glyphicon glyphicon-user" ></span> Sign Up</a></li>
                                 <li><a href="#" onclick="client.OpenLoginDialog()"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                                <li><a href="#" onclick="client.OpenAboutDialog()"> About</a></li>
                             </ul>
                         </div><!-- /.navbar-collapse -->
                     </div><!-- /.container-fluid -->
@@ -72,11 +73,6 @@ and open the template in the editor.
                 </div>
             </div> 
             <div class="row" id="DIV_Game">
-            </div> 
-            <div class="row">
-                <div class="col-md-12">
-                    <p class="text-right">&copy; copyright 2015 by PDDIII Mark.Chen</p>
-                </div>
             </div> 
             <div class="modal fade" id="DLG_SignUp"><!-- SinUp-->
                 <div class="modal-dialog">
@@ -251,7 +247,18 @@ and open the template in the editor.
                     </div>
                 </div>
             </div><!-- Game result-->
-
+            <div class="modal fade" id="DLG_About"><!-- About-->
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">                            
+                            <div class="jumbotron">
+                                <h1>開發團隊</h1>
+                                <p>第十七屆職工福利委員會</p>
+                            </div>
+                        </div>                          
+                    </div>
+                </div>
+            </div><!-- About-->
         </div>
         <!-- Bootstrap core JavaScript
       ================================================== -->

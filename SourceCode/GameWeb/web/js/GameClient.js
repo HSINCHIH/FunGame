@@ -685,6 +685,10 @@ GameClient.prototype = {
         $("#DLG_Game_Result").modal("toggle");
         $("#IMG_Game_Result").animate({height: "50%", width: "50%"}, 500);
     },
+    OpenAboutDialog: function ()
+    {
+        $("#DLG_About").modal("toggle");
+    },
     Init: function () {
         this.m_ClickCards = [];
         //this.CreateDefaultCards();

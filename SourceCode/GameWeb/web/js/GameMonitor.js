@@ -261,7 +261,7 @@ GameMonitor.prototype = {
         $('#GD_Room_List tbody tr').remove();
         for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GD_Room_List tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
+            $('#GD_Room_List tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + GameLevel[parseInt(recvMsg.Args[i + 2])] + '</td><td><input type="button" class="btn btn-default" value="Watch" onclick="monitor.WatchRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
         }
     },
     WatchRoom: function (roomNum, roomName)
@@ -424,7 +424,7 @@ GameMonitor.prototype = {
         $('#GD_Game_History tbody tr').remove();
         for (var i = 1; i < recvMsg.Args.length; i += 4)
         {
-            $('#GD_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td>' + recvMsg.Args[i + 3] + '</td></tr>');
+            $('#GD_Game_History tbody').append('<tr><td>' + recvMsg.Args[i + 0] + '</td><td>' + GameLevel[parseInt(recvMsg.Args[i + 1])] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td>' + recvMsg.Args[i + 3] + '</td></tr>');
         }
     },
     OpenReplayRoomDialog: function ()
@@ -445,7 +445,7 @@ GameMonitor.prototype = {
         $('#GD_Replay_Room tbody tr').remove();
         for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GD_Replay_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="button" class="btn btn-default" value="Replay" onclick="monitor.GetReplayData(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
+            $('#GD_Replay_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + GameLevel[parseInt(recvMsg.Args[i + 2])] + '</td><td><input type="button" class="btn btn-default" value="Replay" onclick="monitor.GetReplayData(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
         }
     },
     GetReplayData: function (roomNum, roomName)

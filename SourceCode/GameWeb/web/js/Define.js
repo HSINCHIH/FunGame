@@ -59,6 +59,7 @@ var ServerAction = {
     MOSV_GET_REPLAY_DATA: 44,
     SVMO_GET_REPLAY_DATA: 45
 };
+var GameLevel = ["Normal", "Nightmare", "Hell"];
 
 
 

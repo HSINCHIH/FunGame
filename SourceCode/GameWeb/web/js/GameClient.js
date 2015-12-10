@@ -459,7 +459,7 @@ GameClient.prototype = {
         $('#GD_Join_Room tbody tr').remove();
         for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GD_Join_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="password" id="TB_ROOM_' + recvMsg.Args[i + 0] + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.JoinRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
+            $('#GD_Join_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + GameLevel[parseInt(recvMsg.Args[i + 2])] + '</td><td><input type="password" id="TB_ROOM_' + recvMsg.Args[i + 0] + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.JoinRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
         }
     },
     JoinRoom: function (roomNum, roomName)

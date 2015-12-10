@@ -333,17 +333,16 @@ public class MainServer implements IReceiveMsgCallBack {
 
     private void PLSV_GET_ENABLE_ROOM_recv(BaseMessage msg, EndPoint ep) {
         try {
-            String playerNum = msg.Args.get(0);
-            String sql = String.format("SELECT `RoomNum`,`RoomName` FROM `Room` WHERE `RoomState` = %d;", 1);
+            String sql = String.format("SELECT `RoomNum`, `RoomName`, `GameLevel` FROM `Room` WHERE `RoomState` = %d;", 1);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GET_ENABLE_ROOM;
-            StringBuilder sb = new StringBuilder();
             newMsg.Args.add("1");//Success
             for (String[] cols : rs) {
-                sb.append(String.format("{RoomNum:\"%s\",RoomName:\"%s\"},", cols[0], cols[1]));
+                newMsg.Args.add(cols[0]);
+                newMsg.Args.add(cols[1]);
+                newMsg.Args.add(cols[2]);
             }
-            newMsg.Args.add(String.format("[%s]", sb.toString().substring(0, sb.length() - 1)));
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_GET_ENABLE_ROOM_recv", e.getMessage()));
@@ -706,7 +705,6 @@ public class MainServer implements IReceiveMsgCallBack {
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVMO_GET_ENABLE_ROOM;
-            StringBuilder sb = new StringBuilder();
             newMsg.Args.add("1");//Success
             for (String[] cols : rs) {
                 newMsg.Args.add(cols[0]);

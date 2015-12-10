@@ -100,7 +100,7 @@ GameClient.prototype = {
                         console.log("SVPL_GET_ENABLE_ROOM fail");
                         return;
                     }
-                    this.ShowJoinRoomList(recvMsg.Args[1]);
+                    this.LoadJoinRoom(recvMsg);
                 }
                 break;
             case ServerAction.SVPL_JOIN_ROOM:
@@ -446,7 +446,6 @@ GameClient.prototype = {
         //Get room member
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_GET_ENABLE_ROOM;
-        newMsg.Args.push(this.m_PlayerNum);
         this.Send(newMsg);
         //Toggle form
         $("#DLG_Join_Room").modal("toggle");
@@ -455,13 +454,12 @@ GameClient.prototype = {
     {
         $("#DLG_Join_Room").modal("toggle");
     },
-    ShowJoinRoomList: function (rawData)
+    LoadJoinRoom: function (recvMsg)
     {
-        var roomList = eval(rawData);
-        $('#GRID_ROOM_LIST tbody tr').remove();
-        for (var i = 0; i < roomList.length; i++)
+        $('#GD_Join_Room tbody tr').remove();
+        for (var i = 1; i < recvMsg.Args.length; i += 3)
         {
-            $('#GRID_ROOM_LIST tbody').append('<tr><td>' + roomList[i].RoomName + '</td><td><input type="password" id="TB_ROOM_' + roomList[i].RoomNum + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.JoinRoom(' + roomList[i].RoomNum + ',\'' + roomList[i].RoomName + '\')"/></td></tr>');
+            $('#GD_Join_Room tbody').append('<tr><td>' + recvMsg.Args[i + 1] + '</td><td>' + recvMsg.Args[i + 2] + '</td><td><input type="password" id="TB_ROOM_' + recvMsg.Args[i + 0] + '_PW" class="btn btn-default"/></td><td><input type="button" class="btn btn-default" value="Join" onclick="client.JoinRoom(' + recvMsg.Args[i + 0] + ',\'' + recvMsg.Args[i + 1] + '\')"/></td></tr>');
         }
     },
     JoinRoom: function (roomNum, roomName)

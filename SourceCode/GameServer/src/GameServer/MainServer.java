@@ -153,11 +153,25 @@ public class MainServer implements IReceiveMsgCallBack {
         for (int i = 0; i < 8; i++) {
             int index = (int) (Math.random() * sourceItems.size());
             String item = sourceItems.get(index);
-            pickItems.add(String.format("%s_%d", item, 0));
-            if (level == 0) {
-                pickItems.add(String.format("%s_%d", item, 0));
-            } else {
-                pickItems.add(String.format("%s_%d", item, 1));
+            switch (level) {
+                case 0: {
+                    pickItems.add(String.format("%s_%d", item, 0));
+                    pickItems.add(String.format("%s_%d", item, 0));
+                }
+                break;
+                case 1: {
+                    pickItems.add(String.format("%s_%d", item, 1));
+                    pickItems.add(String.format("%s_%d", item, 1));
+                }
+                break;
+                case 2: {
+                    pickItems.add(String.format("%s_%d", item, 0));
+                    pickItems.add(String.format("%s_%d", item, 1));
+                }
+                break;
+                default: {
+                }
+                break;
             }
             sourceItems.remove(index);
         }

@@ -373,6 +373,7 @@ GameClient.prototype = {
         $("#LB_Create_Room_MSG").text("");
         $("#LB_Create_Room_MSG").hide();
         $("#BT_Create_Room_Create").prop('disabled', false);
+        this.SetGameLevel('0');
         //Toggle form
         $("#DLG_Create_Room").modal("toggle");
     },
@@ -380,9 +381,11 @@ GameClient.prototype = {
     {
         $("#DLG_Create_Room").modal("toggle");
     },
-    SelectGameLevel: function (level)
+    SetGameLevel: function (level)
     {
         this.m_GameLevel = parseInt(level);
+        $("#DD_Level").text(StringFormat(" {0} ", GameLevel[this.m_GameLevel]));
+        $("#DD_Level").append('<span class="caret"></span>');
     },
     CreateRoom: function ()
     {

@@ -150,7 +150,7 @@ public class MainServer implements IReceiveMsgCallBack {
         ArrayList<String> sourceItems = new ArrayList<>();
         sourceItems.addAll(Arrays.asList("RS30", "CP60", "CP55", "CP50", "9700", "9200", "8600", "8400", "8300", "8200", "8000", "1000", "1100", "1500", "1704", "1861"));
         ArrayList<String> pickItems = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 9; i++) {
             int index = (int) (Math.random() * sourceItems.size());
             String item = sourceItems.get(index);
             switch (level) {

@@ -19,6 +19,7 @@ GameClient.prototype = {
     m_PrevClickTick: 0,
     m_ClickCards: null,
     m_CanClickCard: false,
+    m_CardCount: 18,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -495,14 +496,14 @@ GameClient.prototype = {
                 $("#IMG_CountDown").css({opacity: 1});
                 $("#IMG_CountDown").fadeTo(1000, 0.01, function () {
                     $("#DLG_Count_Down").modal("toggle");
-                    for (var i = 0; i <= 16; i++)
+                    for (var i = 0; i < self.m_CardCount; i++)
                     {
                         //flip card to front
                         $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
                         $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(-180deg)');
                     }
                     setTimeout(function () {
-                        for (var i = 0; i <= 16; i++)
+                        for (var i = 0; i < self.m_CardCount; i++)
                         {
                             //flip card to front
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
@@ -551,7 +552,7 @@ GameClient.prototype = {
         for (var j = 0; j < cardState.length; j++)
         {
             var item = cardState[j];
-            var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ApplyStep(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
+            var test = '<div class="col-md-2 col-xs-4"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ApplyStep(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
             $("#DIV_" + playerNum).append(test);
         }
         this.ApplyState(cardState);

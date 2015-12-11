@@ -15,6 +15,7 @@ GameMonitor.prototype = {
     m_ReplayStep: null,
     m_ReplayIndex: 0,
     m_ReplayHandle: null,
+    m_CardCount: 18,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -288,7 +289,7 @@ GameMonitor.prototype = {
             for (var j = 0; j < cardState.length; j++)
             {
                 var item = cardState[j];
-                var test = '<div class="col-md-3 col-xs-3"><div class="flip"><div class="card" id="' + StringFormat("card_{0}_{1}", playerNum, item.Card) + '" on onclick="monitor.OnCardClick(\'' + StringFormat("{0}_{1}", playerNum, item.Card) + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}_{1}", playerNum, item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
+                var test = '<div class="col-md-4 col-xs-4"><div class="flip"><div class="card" id="' + StringFormat("card_{0}_{1}", playerNum, item.Card) + '" on onclick="monitor.OnCardClick(\'' + StringFormat("{0}_{1}", playerNum, item.Card) + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}_{1}", playerNum, item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
                 $("#DIV_" + playerNum).append(test);
             }
             this.m_RoomState[playerNum] = {ClickCards: [], State: cardState};
@@ -390,7 +391,7 @@ GameMonitor.prototype = {
                     $("#DLG_Count_Down").modal("toggle");
                     for (var i = 0; i < self.m_PlayerList.length; i++)
                     {
-                        for (var j = 0; j <= 16; j++)
+                        for (var j = 0; j < self.m_CardCount; j++)
                         {
                             //flip card to front
                             $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('-webkit-transform', 'rotatey(-180deg)');
@@ -400,7 +401,7 @@ GameMonitor.prototype = {
                     setTimeout(function () {
                         for (var i = 0; i < self.m_PlayerList.length; i++)
                         {
-                            for (var j = 0; j <= 16; j++)
+                            for (var j = 0; j < self.m_CardCount; j++)
                             {
                                 //flip card to front
                                 $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
@@ -481,12 +482,12 @@ GameMonitor.prototype = {
     IsWinner: function (playerNum)
     {
         var openCount = 0;
-        for (var i = 0; i < 16; i++)
+        for (var i = 0; i < this.m_CardCount; i++)
         {
             var selectCard = $(StringFormat("#card_{0}_{1}", playerNum, DigitFormat(i, 2)));
             openCount += parseInt(selectCard.data("Open"));
         }
-        return openCount === 16;
+        return openCount === this.m_CardCount;
     },
     SetWinner: function (playerNum)
     {

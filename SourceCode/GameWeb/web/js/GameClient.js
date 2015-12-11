@@ -700,5 +700,6 @@ GameClient.prototype = {
         this.m_Socket.m_Event.AddListener("onError", BindWrapper(this, this.OnError));
         this.m_Socket.m_Event.AddListener("onClose", BindWrapper(this, this.OnClose));
         this.Connect();
+        $("#DIV_Version").append('<p class="text-right">Version : <strong>' + Version + '</strong></p>');
     }
 };

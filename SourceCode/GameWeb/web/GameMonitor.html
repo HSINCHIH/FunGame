@@ -169,9 +169,51 @@ and open the template in the editor.
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-body">                            
-                            <div class="jumbotron">
-                                <h1>開發團隊</h1>
-                                <p>第十七屆職工福利委員會</p>
+                            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                                <!-- Indicators -->
+                                <ol class="carousel-indicators">
+                                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                                    <li data-target="#myCarousel" data-slide-to="2"></li>
+                                    <li data-target="#myCarousel" data-slide-to="3"></li>
+                                </ol>
+                                <!-- Wrapper for slides -->
+                                <div class="carousel-inner" role="listbox">
+                                    <div class="item active">
+                                        <div class="jumbotron">
+                                            <h1>Product Image</h1>
+                                            <p>Jason Chiu (邱政彰)</p>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="jumbotron">
+                                            <h1>Product List</h1>
+                                            <p>Olivia Hu (胡婉玲)</p>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="jumbotron">
+                                            <h1>Game Design</h1>
+                                            <p>Mark Chen (陳信志)</p>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <div class="jumbotron">
+                                            <h1>Game Test</h1>
+                                            <p>全體第十七屆職工福利委員</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Left and right controls -->
+                                <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                                    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                                    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
                             </div>
                         </div>                          
                     </div>

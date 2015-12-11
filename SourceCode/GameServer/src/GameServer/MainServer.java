@@ -148,7 +148,7 @@ public class MainServer implements IReceiveMsgCallBack {
 
     private String CreateCardState(int level) {
         ArrayList<String> sourceItems = new ArrayList<>();
-        sourceItems.addAll(Arrays.asList("RS30", "CP55", "CP60", "1560", "CP50", "CP30", "9600", "8200", "9300", "9200", "8600", "8300", "1704", "1662", "1500", "1105", "1070", "8400", "9700"));
+        sourceItems.addAll(Arrays.asList("RS30", "CP60", "CP55", "CP50", "9700", "9200", "8600", "8400", "8300", "8200", "8000", "1000", "1100", "1500", "1704", "1861"));
         ArrayList<String> pickItems = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             int index = (int) (Math.random() * sourceItems.size());

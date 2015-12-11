@@ -630,7 +630,7 @@ public class MainServer implements IReceiveMsgCallBack {
                 String data = matcher.group(0);
                 totalOpen++;
             }
-            if (totalOpen == 15) {
+            if (totalOpen == 17) {
                 //Check winner
                 sql = String.format("SELECT PlayerNum FROM `RoomPlayer` WHERE `RoomNum` = %s AND `Winner` = %d;", roomNum, 1);
                 List<String[]> rs = m_DBHandler.ExecuteQuery(sql);

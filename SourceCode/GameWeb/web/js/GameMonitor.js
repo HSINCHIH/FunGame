@@ -342,16 +342,16 @@ GameMonitor.prototype = {
                 if (selectCard1.data("Content") === selectCard2.data("Content"))
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
-                    selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
-                        selectCard1.data("Click", 0);
-                        selectCard2.data("Click", 0);
-                        //reset array
-                        self.m_RoomState[playerNum].ClickCards = [];
-                        if (self.IsWinner(playerNum))
-                        {
-                            self.SetWinner(parseInt(playerNum));
-                        }
-                    });
+                    selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
+                     //reset status to 0
+                    selectCard1.data("Click", 0);
+                    selectCard2.data("Click", 0);
+                    //reset array
+                    self.m_RoomState[playerNum].ClickCards = [];
+                    if (self.IsWinner(playerNum))
+                    {
+                        self.SetWinner(parseInt(playerNum));
+                    }
                 }
                 else
                 {
@@ -475,9 +475,9 @@ GameMonitor.prototype = {
         {
             return;
         }
-        this.ApplyStep(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0], this.m_ReplayStep[this.m_ReplayIndex * 2 + 1]);
+        var step = this.m_ReplayStep[this.m_ReplayIndex * 2 + 1];
+        this.ApplyStep(playerNum, step);
         this.m_ReplayIndex++;
-        console.log("this.m_ReplayIndex : " + this.m_ReplayIndex);
     },
     IsWinner: function (playerNum)
     {
@@ -510,6 +510,17 @@ GameMonitor.prototype = {
     OpenAboutDialog: function ()
     {
         $("#DLG_About").modal("toggle");
+    },
+    GetState: function (playerNum)
+    {
+        var cardState = [];
+        for (var i = 0; i < this.m_CardCount; i++)
+        {
+            var item = $(StringFormat("#card_{0}_{1}", playerNum, DigitFormat(i, 2)));
+            var info = {"Card": item.data("Card"), "Img": item.data("Img"), "Open": item.data("Open"), "Click": item.data("Click"), "Content": item.data("Content")};
+            cardState.push(info);
+        }
+        return JSON.stringify(cardState);
     },
     Init: function ()
     {

@@ -15,11 +15,13 @@ GameClient.prototype = {
     m_RoomName: "",
     m_RoomNum: "",
     m_GameLevel: -1,
-    m_ClickInterval: 300,
+    m_ClickInterval: 0,
     m_PrevClickTick: 0,
     m_ClickCards: null,
     m_CanClickCard: false,
     m_CardCount: 18,
+    m_AutoIndex: 0,
+    m_AutoHandle: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -394,7 +396,7 @@ GameClient.prototype = {
         $("#BT_Create_Room_Create").prop('disabled', true);
         var roomName = $("#TB_Create_Room_Name").val();
         var roomPW = $("#TB_Create_Room_PW").val();
-        var description = $("#TB_Create_Room_Description").val();
+        var description = $("#TB_Create_Room_Description").val() === "" ? "empty" : $("#TB_Create_Room_Description").val();
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_CREATE_ROOM;
         newMsg.Args.push(this.m_PlayerNum);
@@ -509,6 +511,7 @@ GameClient.prototype = {
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
+                        //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
                     }, 1000);
                 });
             });
@@ -627,12 +630,12 @@ GameClient.prototype = {
                 if (selectCard1.data("Content") === selectCard2.data("Content"))
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
-                    selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1, function () {
-                        selectCard1.data("Click", 0);
-                        selectCard2.data("Click", 0);
-                        //reset array
-                        self.m_ClickCards = [];
-                    });
+                    selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
+                     //reset status to 0
+                    selectCard1.data("Click", 0);
+                    selectCard2.data("Click", 0);
+                    //reset array
+                    self.m_ClickCards = [];
                 }
                 else
                 {
@@ -676,8 +679,10 @@ GameClient.prototype = {
         newMsg.Args.push(this.m_PlayerNum);
         newMsg.Args.push(this.m_RoomNum);
         newMsg.Args.push(cardID);
-        newMsg.Args.push(this.GetState());
+        var state = this.GetState();
+        newMsg.Args.push(state);
         this.Send(newMsg);
+        //console.log(StringFormat("Step : {0}, State : {1}", cardID, state));
     },
     OpenGameResultDialog: function (isWin)
     {
@@ -690,6 +695,22 @@ GameClient.prototype = {
     OpenAboutDialog: function ()
     {
         $("#DLG_About").modal("toggle");
+    },
+    AutoPlay: function ()
+    {
+        if (this.m_AutoIndex === 18)
+        {
+            clearInterval(this.m_AutoHandle);
+            this.m_AutoIndex = 0;
+            return;
+        }
+        if (this.m_ClickCards.length === 2)
+        {
+            return;
+        }
+        this.ApplyStep(DigitFormat(this.m_AutoIndex, 2));
+        this.m_AutoIndex++;
+        console.log(StringFormat("this.m_AutoIndex : {0}", this.m_AutoIndex));
     },
     Init: function () {
         this.m_ClickCards = [];

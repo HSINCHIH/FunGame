@@ -179,6 +179,7 @@ public class MainServer implements IReceiveMsgCallBack {
         int orderIndex = 0;
         while (!pickItems.isEmpty()) {
             int index = (int) (Math.random() * pickItems.size());
+            //int index = 0;
             sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%s\",\"Open\":0,\"Click\":0,\"Content\":\"%s\"},", orderIndex, pickItems.get(index), pickItems.get(index).split("_")[0]));
             pickItems.remove(index);
             orderIndex++;

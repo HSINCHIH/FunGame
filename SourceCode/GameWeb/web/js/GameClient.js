@@ -22,6 +22,7 @@ GameClient.prototype = {
     m_CardCount: 18,
     m_AutoIndex: 0,
     m_AutoHandle: null,
+    m_GameStart: true,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -203,6 +204,7 @@ GameClient.prototype = {
                         return;
                     }
                     this.OpenGameResultDialog(recvMsg.Args[1] === this.m_PlayerNum);
+                    this.m_GameStart = false;
                 }
                 break;
             case ServerAction.SVPL_RESUME_GAME:
@@ -512,6 +514,7 @@ GameClient.prototype = {
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
                         //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
+                        self.m_GameStart = true;
                     }, 1000);
                 });
             });
@@ -586,6 +589,10 @@ GameClient.prototype = {
     ApplyStep: function (step)
     {
         console.log("ApplyStep");
+        if (!this.m_GameStart)
+        {
+            return;
+        }
         //Check interval
         var curTick = (new Date()).getTime();
         //console.log(curTick - this.m_PrevClickTick);
@@ -631,7 +638,7 @@ GameClient.prototype = {
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
-                     //reset status to 0
+                    //reset status to 0
                     selectCard1.data("Click", 0);
                     selectCard2.data("Click", 0);
                     //reset array

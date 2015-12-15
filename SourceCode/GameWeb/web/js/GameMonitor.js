@@ -12,10 +12,9 @@ GameMonitor.prototype = {
     m_WatchRoom: -1,
     m_RoomState: null,
     m_PlayerList: null,
-    m_ReplayStep: null,
-    m_ReplayIndex: 0,
-    m_ReplayHandle: null,
     m_CardCount: 18,
+    m_ReadQueueHandle: null,
+    m_StepQueuq: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -76,7 +75,10 @@ GameMonitor.prototype = {
                 break;
             case ServerAction.SVMO_SETP:
                 {
-                    this.ApplyStep(recvMsg.Args[0], recvMsg.Args[1]);
+                    var playerNum = recvMsg.Args[0];
+                    var step = recvMsg.Args[1];
+                    //console.log(StringFormat("PlayerNum: {0}, Step : {1}, State : {2}", playerNum, step, this.GetState(playerNum)));
+                    this.m_StepQueuq.push({playerNum: playerNum, step: step});
                 }
                 break;
             case ServerAction.SVMO_GAME_READY:
@@ -127,12 +129,11 @@ GameMonitor.prototype = {
                     {
                         stateInfo.push(recvMsg.Args[i]);
                     }
-                    for (var i = 2 + playerCount * 4; i < recvMsg.Args.length; i++)
-                    {
-                        this.m_ReplayStep.push(recvMsg.Args[i]);
-                    }
                     this.LoadRoomState(stateInfo);
-                    this.m_ReplayHandle = setInterval(BindWrapper(this, this.ReplayGame), 1000);
+                    for (var i = 2 + playerCount * 4; i < recvMsg.Args.length; i += 2)
+                    {
+                        this.m_StepQueuq.push({playerNum: parseInt(recvMsg.Args[i + 0]), step: recvMsg.Args[i + 1]});
+                    }
                 }
                 break;
             default:
@@ -343,7 +344,7 @@ GameMonitor.prototype = {
                 {
                     selectCard1.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
                     selectCard2.fadeTo(400, 0.1).delay(300).fadeTo(400, 1);
-                     //reset status to 0
+                    //reset status to 0
                     selectCard1.data("Click", 0);
                     selectCard2.data("Click", 0);
                     //reset array
@@ -453,31 +454,12 @@ GameMonitor.prototype = {
     {
         this.m_RoomState = [];
         this.m_PlayerList = [];
-        this.m_ReplayStep = [];
-        this.m_ReplayIndex = 0;
         $("#DIV_Game").empty();
         this.CloseReplayRoomDialog();
         var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GET_REPLAY_DATA;
         newMsg.Args.push(roomNum);
         this.Send(newMsg);
-    },
-    ReplayGame: function ()
-    {
-        console.log("ReplayGame");
-        if (this.m_ReplayIndex >= (this.m_ReplayStep.length / 2))
-        {
-            clearInterval(this.m_ReplayHandle);
-            return;
-        }
-        var playerNum = parseInt(this.m_ReplayStep[this.m_ReplayIndex * 2 + 0]);
-        if (this.m_RoomState[playerNum].ClickCards.length === 2)
-        {
-            return;
-        }
-        var step = this.m_ReplayStep[this.m_ReplayIndex * 2 + 1];
-        this.ApplyStep(playerNum, step);
-        this.m_ReplayIndex++;
     },
     IsWinner: function (playerNum)
     {
@@ -522,6 +504,19 @@ GameMonitor.prototype = {
         }
         return JSON.stringify(cardState);
     },
+    ReadStepQueue: function ()
+    {
+        if (this.m_StepQueuq === null | this.m_StepQueuq.length <= 0)
+        {
+            return;
+        }
+        if (this.m_RoomState[this.m_StepQueuq[0].playerNum].ClickCards.length === 2)
+        {
+            return;
+        }
+        var item = this.m_StepQueuq.shift();
+        this.ApplyStep(item.playerNum, item.step);
+    },
     Init: function ()
     {
         this.m_Socket = new WrapWebSocket();
@@ -531,6 +526,8 @@ GameMonitor.prototype = {
         this.m_Socket.m_Event.AddListener("onClose", BindWrapper(this, this.OnClose));
         this.Connect();
         $("#DIV_Version").append('<p class="text-right">Version : <strong>' + Version + '</strong></p>');
+        this.m_StepQueuq = [];
+        this.m_StopReadQueue = setInterval(BindWrapper(this, this.ReadStepQueue), 100);
     }
 };
 

@@ -513,8 +513,8 @@ GameClient.prototype = {
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
-                        //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
                         self.m_GameStart = true;
+                        //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
                     }, 1000);
                 });
             });
@@ -705,19 +705,29 @@ GameClient.prototype = {
     },
     AutoPlay: function ()
     {
-        if (this.m_AutoIndex === 18)
+        var cardsArray = this.GetUnSelectCards();
+        if (cardsArray.length === 0 || !this.m_GameStart)
         {
             clearInterval(this.m_AutoHandle);
-            this.m_AutoIndex = 0;
             return;
         }
-        if (this.m_ClickCards.length === 2)
-        {
-            return;
-        }
-        this.ApplyStep(DigitFormat(this.m_AutoIndex, 2));
-        this.m_AutoIndex++;
-        console.log(StringFormat("this.m_AutoIndex : {0}", this.m_AutoIndex));
+        var index = Math.floor(Math.random() * cardsArray.length);
+        var card = cardsArray[index];
+        this.ApplyStep(DigitFormat(card, 2));
+    },
+    GetUnSelectCards: function ()
+    {
+        var unSelectCards = [];
+        $(".card").each(function () {
+            var item = $(this);
+            var id = item.attr('id').substring(4, 7);
+            var info = {"Card": item.data("Card"), "Img": item.data("Img"), "Open": item.data("Open"), "Click": item.data("Click"), "Content": item.data("Content")};
+            if (item.data("Open") !== "1")
+            {
+                unSelectCards.push(item.data("Card"));
+            }
+        });
+        return unSelectCards;
     },
     Init: function () {
         this.m_ClickCards = [];

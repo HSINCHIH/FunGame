@@ -118,7 +118,7 @@ GameClient.prototype = {
                     this.m_RoomNum = recvMsg.Args[1];
                     this.m_RoomName = recvMsg.Args[2];
                     this.ShowRoom(this.m_RoomName);
-                    this.ShowJoinRoomMsg(MessageLevel.Danger, "Join room success");
+                    this.ShowJoinRoomMsg(MessageLevel.Success, "Join room success");
                     this.CloseJoinRoomDialog();
                 }
                 break;
@@ -469,6 +469,8 @@ GameClient.prototype = {
         this.Send(newMsg);
         //Toggle form
         $("#DLG_Join_Room").modal("toggle");
+        $("#LB_JOIN_ROOM_MSG").text("");
+        $("#LB_JOIN_ROOM_MSG").hide();
     },
     CloseJoinRoomDialog: function ()
     {

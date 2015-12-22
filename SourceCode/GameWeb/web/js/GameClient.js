@@ -529,7 +529,7 @@ GameClient.prototype = {
                         }
                         self.m_GameStart = true;
                         //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
-                    }, 1000);
+                    }, 5000);
                 });
             });
         });

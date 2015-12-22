@@ -416,7 +416,7 @@ GameMonitor.prototype = {
                                 $(StringFormat("#card_{0}_{1}", self.m_PlayerList[i], DigitFormat(j, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                             }
                         }
-                    }, 1000);
+                    }, 5000);
                 });
             });
         });

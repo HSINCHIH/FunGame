@@ -20,37 +20,35 @@ import java.util.List;
 public class DataBaseHandler {
 
     Log m_Log = new Log("DataBaseHandler");
-    Connection m_Connection = null;
-    Statement m_Statement = null;
-    boolean m_IsConnect = false;
 
     public DataBaseHandler() {
     }
 
-    public boolean Initial() {
+    private Statement GetStatement() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             String url = String.format("jdbc:mysql://%s:%d/%s", Settings.DB_Host, Settings.DB_Port, Settings.DB_Name);
-            m_Connection = DriverManager.getConnection(url, Settings.DB_USER, Settings.DB_PW);
-            m_Statement = m_Connection.createStatement();
-            m_IsConnect = true;
-            return true;
+            Connection connection = DriverManager.getConnection(url, Settings.DB_USER, Settings.DB_PW);
+            Statement statement = connection.createStatement();
+            return statement;
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "Initial", e.getMessage()));
-            return false;
+            return null;
         }
     }
 
     public List<String[]> ExecuteQuery(String sql) {
         ArrayList<String[]> list = new ArrayList<>();
-        if (!m_IsConnect) {
-            return list;
-        }
         try {
+            Statement statement = GetStatement();
+            if (statement == null) {
+                m_Log.Writeln(String.format("%s fail", "GetStatement"));
+                return list;
+            }
             if (!sql.toUpperCase().startsWith("SELECT")) {
                 return list;
             }
-            ResultSet rs = m_Statement.executeQuery(sql);
+            ResultSet rs = statement.executeQuery(sql);
             ResultSetMetaData rsMetaData = rs.getMetaData();
             String[] strArray = null;
             while (rs.next()) {
@@ -68,15 +66,17 @@ public class DataBaseHandler {
     }
 
     public int Execute(String sql) {
-        if (!m_IsConnect) {
-            return -1;
-        }
         try {
+            Statement statement = GetStatement();
+            if (statement == null) {
+                m_Log.Writeln(String.format("%s fail", "GetStatement"));
+                return -1;
+            }
             if (sql.toUpperCase().startsWith("SELECT")) {
                 return -1;
             }
-            m_Statement.execute(sql);
-            return m_Statement.getUpdateCount();
+            statement.execute(sql);
+            return statement.getUpdateCount();
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "Initial", e.getMessage()));
             return -1;

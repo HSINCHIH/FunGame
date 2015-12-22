@@ -150,6 +150,8 @@ GameMonitor.prototype = {
     OnClose: function (event)
     {
         console.log("OnClose");
+        alert("Server Disconnect!!");
+        this.m_IsLogin = false;
     },
     Send: function (msg)
     {
@@ -247,6 +249,11 @@ GameMonitor.prototype = {
     },
     OpenWatchRoomDialog: function ()
     {
+        if (!this.m_IsLogin)
+        {
+            alert("You should login first!!");
+            return;
+        }
         var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GET_ENABLE_ROOM;
         this.Send(newMsg);
@@ -416,6 +423,11 @@ GameMonitor.prototype = {
     },
     OpenGameHistoryDialog: function ()
     {
+        if (!this.m_IsLogin)
+        {
+            alert("You should login first!!");
+            return;
+        }
         var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GAME_HISTORY;
         this.Send(newMsg);
@@ -431,6 +443,11 @@ GameMonitor.prototype = {
     },
     OpenReplayRoomDialog: function ()
     {
+        if (!this.m_IsLogin)
+        {
+            alert("You should login first!!");
+            return;
+        }
         var newMsg = new Message();
         newMsg.Action = ServerAction.MOSV_GET_REPLAY_ROOM;
         this.Send(newMsg);

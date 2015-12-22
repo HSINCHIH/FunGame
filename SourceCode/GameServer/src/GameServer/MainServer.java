@@ -131,10 +131,6 @@ public class MainServer implements IReceiveMsgCallBack {
             }
             //Initial database handler
             m_DBHandler = new DataBaseHandler();
-            if (!m_DBHandler.Initial()) {
-                m_Log.Writeln(String.format("%s %s", "Start", "m_DBHandler fail"));
-                return false;
-            }
             return true;
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "Start", e.getMessage()));

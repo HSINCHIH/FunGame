@@ -236,6 +236,8 @@ GameClient.prototype = {
     OnClose: function (event)
     {
         console.log("OnClose");
+        alert("Server Disconnect!!");
+        this.m_IsLogin = false;
     },
     Send: function (msg)
     {
@@ -371,6 +373,11 @@ GameClient.prototype = {
     //Create room
     OpenCreateRoomDialog: function ()
     {
+        if (!this.m_IsLogin)
+        {
+            alert("You should login first!!");
+            return;
+        }
         //Reset create room modal
         $("#TB_Create_Room_Name").val("");
         $("#TB_Create_Room_PW").val("");
@@ -451,6 +458,11 @@ GameClient.prototype = {
     //join room
     OpenJoinRoomDialog: function ()
     {
+        if (!this.m_IsLogin)
+        {
+            alert("You should login first!!");
+            return;
+        }
         //Get room member
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_GET_ENABLE_ROOM;

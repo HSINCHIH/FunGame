@@ -385,6 +385,11 @@ GameClient.prototype = {
         $("#LB_Create_Room_MSG").text("");
         $("#LB_Create_Room_MSG").hide();
         $("#BT_Create_Room_Create").prop('disabled', false);
+        $("#DD_Level_Items").empty();
+        for (var i = 0; i < GameLevel.length; i++)
+        {
+            $("#DD_Level_Items").append('<li><a href="#" onclick="client.SetGameLevel(' + i + ')">' + GameLevel[i] + '</a></li>');
+        }
         this.SetGameLevel('0');
         //Toggle form
         $("#DLG_Create_Room").modal("toggle");

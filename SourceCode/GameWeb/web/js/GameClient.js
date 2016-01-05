@@ -15,7 +15,7 @@ GameClient.prototype = {
     m_RoomName: "",
     m_RoomNum: "",
     m_GameLevel: -1,
-    m_ClickInterval: 0,
+    m_ClickInterval: 500,
     m_PrevClickTick: 0,
     m_ClickCards: null,
     m_CanClickCard: false,
@@ -23,6 +23,9 @@ GameClient.prototype = {
     m_AutoIndex: 0,
     m_AutoHandle: null,
     m_GameStart: true,
+    m_NotifyQueue: null,
+    m_StepQueue: null,
+    m_RecvSteps: null,
     OnOpen: function (event)
     {
         console.log("OnOpen");
@@ -30,7 +33,7 @@ GameClient.prototype = {
     },
     OnReceive: function (event)
     {
-        console.log("OnReceive");
+        //console.log("OnReceive");
         var recvMsg = this.ParseData(event.data);
         switch (recvMsg.Action)
         {
@@ -189,11 +192,25 @@ GameClient.prototype = {
                 break;
             case ServerAction.SVPL_OPERATOR:
                 {
+                    var uuid = recvMsg.Args[1];
+                    var step = recvMsg.Args[2];
                     if (recvMsg.Args[0] === "0")
                     {
-                        console.log("SVPL_OPERATOR fail");
+                        console.log(StringFormat("SVPL_OPERATOR X, UUID : {0}, Step : {1}", uuid, step));
+                        this.m_NotifyQueue.shift();
                         return;
                     }
+                    this.m_NotifyQueue.shift();
+                    var uuid = recvMsg.Args[1];
+                    var step = recvMsg.Args[2];
+                    console.log(StringFormat("SVPL_OPERATOR O, UUID : {0}, Step : {1}", uuid, step));
+                    //this.ApplyStep(step);
+                    if (this.m_RecvSteps[uuid] !== undefined)
+                    {
+                        return;
+                    }
+                    this.m_RecvSteps[uuid] = step;
+                    this.m_StepQueue.push(step);
                 }
                 break;
             case ServerAction.SVPL_WINNER:
@@ -219,7 +236,8 @@ GameClient.prototype = {
                     this.m_RoomName = recvMsg.Args[2];
                     this.ShowRoom(this.m_RoomName);
                     this.LoadRoomState(recvMsg.Args[4]);
-                    this.ApplyStep(recvMsg.Args[3]);
+                    //this.ApplyStep(recvMsg.Args[3]);
+                    this.m_StepQueue.push(recvMsg.Args[3]);
                 }
                 break;
             default:
@@ -577,7 +595,7 @@ GameClient.prototype = {
         for (var j = 0; j < cardState.length; j++)
         {
             var item = cardState[j];
-            var test = '<div class="col-md-2 col-xs-4"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ApplyStep(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
+            var test = '<div class="col-md-2 col-xs-4"><div class="flip"><div class="card" id="' + StringFormat("card_{0}", item.Card) + '" on onclick="client.ClickCard(\'' + item.Card + '\')"><div class="face front"><img src="images/00.png" alt="" class="img-responsive center-block"/></div><div class="face back"><img src="images/' + StringFormat("{0}.png", item.Img) + '" alt="" id="' + StringFormat("image_{0}", item.Card) + '" class="img-responsive center-block"/></div></div></div></div>';
             $("#DIV_" + playerNum).append(test);
         }
         this.ApplyState(cardState);
@@ -607,20 +625,6 @@ GameClient.prototype = {
     },
     ApplyStep: function (step)
     {
-        console.log("ApplyStep");
-        if (!this.m_GameStart)
-        {
-            return;
-        }
-        //Check interval
-        var curTick = (new Date()).getTime();
-        //console.log(curTick - this.m_PrevClickTick);
-        if (curTick - this.m_PrevClickTick < this.m_ClickInterval)
-        {
-            console.log("return");
-            return;
-        }
-        console.log("run");
         if (this.m_ClickCards.length === 2)
         {
             console.log("already open 2 cards");
@@ -639,8 +643,6 @@ GameClient.prototype = {
             console.log("card already click");
             return;
         }
-        //Send setp and state to server
-        this.NotifyServer(step);
         this.m_ClickCards[this.m_ClickCards.length] = step;
         selectCard.data("Click", 1);
         selectCard.data("Open", 1);
@@ -660,8 +662,7 @@ GameClient.prototype = {
                     //reset status to 0
                     selectCard1.data("Click", 0);
                     selectCard2.data("Click", 0);
-                    //reset array
-                    self.m_ClickCards = [];
+                    console.log(StringFormat("O Success, Step1 : {0}, Step2 : {1}", selectCard1.data("Card"), selectCard2.data("Card")));
                 }
                 else
                 {
@@ -674,13 +675,14 @@ GameClient.prototype = {
                         //reset status to 0
                         selectCard.data("Click", 0);
                         selectCard.data("Open", 0);
+                        console.log(StringFormat("X Fail, Step1 : {0}, Step2 : {1}", selectCard1.data("Card"), selectCard2.data("Card")));
                     }
-                    //reset array
-                    self.m_ClickCards = [];
                 }
+                //reset array
+                self.m_ClickCards = [];
+                console.log(StringFormat("GetState : {0}", self.GetState()));
             }, 500);
         }
-        this.m_PrevClickTick = curTick;
     },
     CleanState: function ()
     {
@@ -698,18 +700,6 @@ GameClient.prototype = {
         });
         return JSON.stringify(cardState);
     },
-    NotifyServer: function (cardID)
-    {
-        var newMsg = new Message();
-        newMsg.Action = ServerAction.PLSV_OPERATOR;
-        newMsg.Args.push(this.m_PlayerNum);
-        newMsg.Args.push(this.m_RoomNum);
-        newMsg.Args.push(cardID);
-        var state = this.GetState();
-        newMsg.Args.push(state);
-        this.Send(newMsg);
-        //console.log(StringFormat("Step : {0}, State : {1}", cardID, state));
-    },
     OpenGameResultDialog: function (isWin)
     {
         var src = isWin ? "images/you_win.jpg" : "images/you_lose.jpg";
@@ -724,15 +714,19 @@ GameClient.prototype = {
     },
     AutoPlay: function ()
     {
+        if (this.m_ClickCards.length === 2)
+        {
+            return;
+        }
         var cardsArray = this.GetUnSelectCards();
         if (cardsArray.length === 0 || !this.m_GameStart)
         {
-            clearInterval(this.m_AutoHandle);
+            //clearInterval(this.m_AutoHandle);
             return;
         }
         var index = Math.floor(Math.random() * cardsArray.length);
         var card = cardsArray[index];
-        this.ApplyStep(DigitFormat(card, 2));
+        this.ClickCard(DigitFormat(card, 2));
     },
     GetUnSelectCards: function ()
     {
@@ -741,15 +735,68 @@ GameClient.prototype = {
             var item = $(this);
             var id = item.attr('id').substring(4, 7);
             var info = {"Card": item.data("Card"), "Img": item.data("Img"), "Open": item.data("Open"), "Click": item.data("Click"), "Content": item.data("Content")};
-            if (item.data("Open") !== "1")
+            if (item.data("Open") !== 1)
             {
                 unSelectCards.push(item.data("Card"));
             }
         });
         return unSelectCards;
     },
+    ClickCard: function (cardID)
+    {
+        if (this.m_NotifyQueue.length > 0)
+        {
+            console.log(StringFormat("ClickCard, Wait Server feedback!!"));
+            return;
+        }
+        var uuid = GetUUID();
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_OPERATOR;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(this.m_RoomNum);
+        newMsg.Args.push(uuid);
+        newMsg.Args.push(cardID);
+        this.Send(newMsg);
+        console.log(StringFormat("Send, UUID : {0}, Step : {1}", uuid, cardID));
+        this.m_NotifyQueue.push({UUID: uuid, Step: cardID});
+        setTimeout(BindWrapper(this, this.ReSendNotify), 300);
+    },
+    ReSendNotify: function ()
+    {
+        if (this.m_NotifyQueue.length <= 0)
+        {
+            return;
+        }
+        console.log(StringFormat("ReSendNotify"));
+        var notifyItem = this.m_NotifyQueue[0];
+        var newMsg = new Message();
+        newMsg.Action = ServerAction.PLSV_OPERATOR;
+        newMsg.Args.push(this.m_PlayerNum);
+        newMsg.Args.push(this.m_RoomNum);
+        newMsg.Args.push(notifyItem.UUID);
+        newMsg.Args.push(notifyItem.Step);
+        this.Send(newMsg);
+        console.log(StringFormat("ReSend, UUID : {0}, Step : {1}", notifyItem.UUID, notifyItem.Step));
+        setTimeout(BindWrapper(this, this.ReSendNotify), 300);
+    },
+    ReadStepQueue: function ()
+    {
+        if (this.m_StepQueue === null | this.m_StepQueue.length <= 0)
+        {
+            return;
+        }
+        if (this.m_ClickCards.length === 2)
+        {
+            return;
+        }
+        var step = this.m_StepQueue.shift();
+        this.ApplyStep(step);
+    },
     Init: function () {
         this.m_ClickCards = [];
+        this.m_NotifyQueue = [];
+        this.m_StepQueue = [];
+        this.m_RecvSteps = [];
         //this.CreateDefaultCards();
         this.m_Socket = new WrapWebSocket();
         this.m_Socket.m_Event.AddListener("onOpen", BindWrapper(this, this.OnOpen));
@@ -758,5 +805,6 @@ GameClient.prototype = {
         this.m_Socket.m_Event.AddListener("onClose", BindWrapper(this, this.OnClose));
         this.Connect();
         $("#DIV_Version").append('<p class="text-right">Version : <strong>' + Version + '</strong></p>');
+        this.m_StopReadQueue = setInterval(BindWrapper(this, this.ReadStepQueue), 300);
     }
 };

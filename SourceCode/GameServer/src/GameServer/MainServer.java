@@ -7,6 +7,7 @@ package GameServer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,6 +24,7 @@ public class MainServer implements IReceiveMsgCallBack {
     DataBaseHandler m_DBHandler = null;
     EndPoint m_MonitorEP = null;
     String m_WatchRoom = "-1";
+    HashMap<String, PlayerData> m_PlayerData = new HashMap();
 
     public MainServer() {
         m_HostIP = Utilities.GetHostIP();
@@ -142,7 +144,7 @@ public class MainServer implements IReceiveMsgCallBack {
         m_LocalControlEP.Stop();
     }
 
-    private String CreateCardState(int level) {
+    private ArrayList<State> CreateCardState(int level) {
         ArrayList<String> sourceItems = new ArrayList<>();
         sourceItems.addAll(Arrays.asList("RS30", "CP60", "CP55", "CP50", "9700", "9200", "8600", "8400", "8300", "8200", "8000", "1000", "1100", "1500", "1704", "1861", "1660", "1664"));
         ArrayList<String> pickItems = new ArrayList<>();
@@ -166,16 +168,22 @@ public class MainServer implements IReceiveMsgCallBack {
             }
             sourceItems.remove(index);
         }
-        StringBuilder sb = new StringBuilder();
+        ArrayList<State> stateList = new ArrayList();
         int orderIndex = 0;
         while (!pickItems.isEmpty()) {
             int index = (int) (Math.random() * pickItems.size());
             //int index = 0;
-            sb.append(String.format("{\"Card\":\"%02d\",\"Img\":\"%s\",\"Open\":0,\"Click\":0,\"Content\":\"%s\"},", orderIndex, pickItems.get(index), pickItems.get(index).split("_")[0]));
+            State state = new State();
+            state.Card = String.format("%02d", orderIndex);
+            state.Img = pickItems.get(index);
+            state.Open = 0;
+            state.Click = 0;
+            state.Content = pickItems.get(index).split("_")[0];
+            stateList.add(state);
             pickItems.remove(index);
             orderIndex++;
         }
-        return String.format("[%s]", sb.toString().substring(0, sb.length() - 1));
+        return stateList;
     }
 
     private void DISCONNECTED_recv(BaseMessage msg, EndPoint ep) {
@@ -513,7 +521,15 @@ public class MainServer implements IReceiveMsgCallBack {
             String sql = String.format("SELECT `GameLevel` FROM `Room` WHERE `RoomNum` = %s;", roomNum);
             List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
             int gameLevel = Integer.parseInt(rs.get(0)[0]);
-            String jsonSetting = CreateCardState(gameLevel);
+            PlayerData playerData = null;
+            if (!m_PlayerData.containsKey(playerNum)) {
+                playerData = new PlayerData();
+                m_PlayerData.put(playerNum, playerData);
+            }
+            playerData = m_PlayerData.get(playerNum);
+            playerData.CardState = CreateCardState(gameLevel);
+            playerData.Clean();
+            String jsonSetting = playerData.CardStateToString();
             sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `State`, `RecordTime`) VALUES (%s, %s, '%s', %s);", roomNum, playerNum, jsonSetting, "CURRENT_TIMESTAMP()");
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_GET_CARD_STATE;
@@ -589,11 +605,35 @@ public class MainServer implements IReceiveMsgCallBack {
         try {
             String playerNum = msg.Args.get(0);
             String roomNum = msg.Args.get(1);
-            String step = msg.Args.get(2);
-            String state = msg.Args.get(3);
+            String uuid = msg.Args.get(2);
+            String step = msg.Args.get(3);
+            m_Log.Writeln(String.format("PLSV_OPERATOR_recv, UUID : %s, Step : %s", uuid, step));
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_OPERATOR;
-            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Step`, `State`, `RecordTime`) VALUES (%s, %s, '%s', '%s', %s);", roomNum, playerNum, step, state, "CURRENT_TIMESTAMP()");
+            PlayerData playerData = null;
+            if (!m_PlayerData.containsKey(playerNum)) {
+                playerData = new PlayerData();
+                m_PlayerData.put(playerNum, playerData);
+            }
+            playerData = m_PlayerData.get(playerNum);
+            if (playerData.StepRecord.containsKey(uuid)) {
+                //Resend notify because player not receive server's feedback
+                newMsg.Args.add("1");//Success
+                newMsg.Args.add(uuid);
+                newMsg.Args.add(step);
+                m_LocalControlEP.Send(newMsg, ep);
+                return;
+            }
+            //First time to receive notify
+            if (!playerData.LegalStep(Integer.parseInt(step))) {
+                newMsg.Args.add("0");//Fail
+                newMsg.Args.add(uuid);
+                newMsg.Args.add(step);
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("%s fail, Step : %s", "LegalStep", step));
+                return;
+            }
+            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Step`, `State`, `RecordTime`) VALUES (%s, %s, '%s', '%s', %s);", roomNum, playerNum, step, playerData.CardStateToString(), "CURRENT_TIMESTAMP()");
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Update fail
                 newMsg.Args.add("0");//Fail
@@ -601,8 +641,6 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_OPERATOR_recv", sql));
                 return;
             }
-            newMsg.Args.add("1");//Success
-            m_LocalControlEP.Send(newMsg, ep);
             //Check send monitor or not
             if (m_MonitorEP != null && m_WatchRoom.equals(roomNum)) {
                 //Send to monitor
@@ -610,19 +648,27 @@ public class MainServer implements IReceiveMsgCallBack {
                 newMsg.Action = ServerAction.SVMO_SETP;
                 newMsg.Args.add(playerNum);
                 newMsg.Args.add(step);
-                newMsg.Args.add(state);
+                newMsg.Args.add(playerData.CardStateToString());
                 m_LocalControlEP.Send(newMsg, m_MonitorEP);
             }
+            playerData.ApplyStep(Integer.parseInt(step));
+            playerData.StepRecord.put(uuid, step);
+            newMsg = new BaseMessage();
+            newMsg.Action = ServerAction.SVPL_OPERATOR;
+            newMsg.Args.add("1");//Success
+            newMsg.Args.add(uuid);
+            newMsg.Args.add(step);
+            m_LocalControlEP.Send(newMsg, ep);
             //Check game over or not 
             String patternStr = "(\"Open\":[1])";
             Pattern pattern = Pattern.compile(patternStr);
-            Matcher matcher = pattern.matcher(state);
+            Matcher matcher = pattern.matcher(playerData.CardStateToString());
             int totalOpen = 0;
             while (matcher.find()) {
                 String data = matcher.group(0);
                 totalOpen++;
             }
-            if (totalOpen == 17) {
+            if (totalOpen == 18) {
                 //Check winner
                 sql = String.format("SELECT PlayerNum FROM `RoomPlayer` WHERE `RoomNum` = %s AND `Winner` = %d;", roomNum, 1);
                 List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
@@ -671,11 +717,24 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_Log.Writeln(String.format("%s fail, sql : %s", "PLSV_RESUME_GAME_recv", sql));
                 return;
             }
+            String roomNum = rs.get(0)[0];
+            String roomName = rs.get(0)[1];
+            String step = rs.get(0)[2];
+            String state = rs.get(0)[3];
+            PlayerData playerData = null;
+            if (!m_PlayerData.containsKey(playerNum)) {
+                playerData = new PlayerData();
+                m_PlayerData.put(playerNum, playerData);
+            }
+            playerData = m_PlayerData.get(playerNum);
+            playerData.Clean();
+            playerData.ParseState(state);
+            playerData.ApplyStep(Integer.parseInt(step));
             newMsg.Args.add("1");//Success
-            newMsg.Args.add(rs.get(0)[0]);
-            newMsg.Args.add(rs.get(0)[1]);
-            newMsg.Args.add(rs.get(0)[2]);
-            newMsg.Args.add(rs.get(0)[3]);
+            newMsg.Args.add(roomNum);
+            newMsg.Args.add(roomName);
+            newMsg.Args.add(step);
+            newMsg.Args.add(state);
             m_LocalControlEP.Send(newMsg, ep);
         } catch (Exception e) {
             m_Log.Writeln(String.format("%s Exception : %s", "PLSV_RESUME_GAME_recv", e.getMessage()));

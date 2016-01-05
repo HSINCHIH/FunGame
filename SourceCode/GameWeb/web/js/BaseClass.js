@@ -44,27 +44,27 @@ WrapWebSocket.prototype =
             m_HostSocket: null,
             ShowMsg: function (msg)
             {
-                console.log(msg);
+                //console.log(msg);
                 //document.getElementById("RTA_SHOWMSG").value += (msg + "\r\n");
             },
             OnOpen: function (event)
             {
-                console.log("open");
+                //console.log("open");
                 this.m_Event.Dispatch("onOpen", event);
             },
             OnReceive: function (event)
             {
-                console.log("recv : " + event.data);
+                //console.log("recv : " + event.data);
                 this.m_Event.Dispatch("onReceive", event);
             },
             OnError: function (event)
             {
-                console.log("error");
+                //console.log("error");
                 this.m_Event.Dispatch("onError", event);
             },
             OnClose: function (event)
             {
-                console.log("close");
+                //console.log("close");
                 this.m_Event.Dispatch("onClose", event);
             },
             Send: function (data)

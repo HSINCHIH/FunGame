@@ -1,6 +1,6 @@
 function StringFormat()
 {
-    if (arguments.length <= 0 || arguments[0] == "")
+    if (arguments.length <= 0 || arguments[0] === "")
         return;
     var result = arguments[0];
     for (var i = 1; i < arguments.length; i++)
@@ -47,6 +47,11 @@ function GetCurrentTime(format)
     format = String(format).replace(/mis/, mis);
     return format;
 }
+function GetTickCount()
+{
+    var now = new Date();
+    return now.getTime();
+}
 function GetUUID()
 {
     var guid = "";
@@ -54,7 +59,7 @@ function GetUUID()
     {
         var n = Math.floor(Math.random() * 16.0).toString(16);
         guid += n;
-        if ((i == 8) || (i == 12) || (i == 16) || (i == 20))
+        if ((i === 8) || (i === 12) || (i === 16) || (i === 20))
             guid += "-";
     }
     return guid;
@@ -83,4 +88,4 @@ var Screen =
         {
             Width: document.documentElement.clientWidth,
             Height: document.documentElement.clientHeight
-        }
+        };

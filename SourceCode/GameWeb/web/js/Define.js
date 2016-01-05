@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 var Version = "0.0.0.2";
-var GameServerIP = "127.0.0.1";
+var GameServerIP = "192.168.67.81";
 var GameServerPort = 99;
 var MessageLevel = {
     Info: 1,

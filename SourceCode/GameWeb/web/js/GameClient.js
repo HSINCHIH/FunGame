@@ -427,7 +427,7 @@ GameClient.prototype = {
         //Disable button
         $("#BT_Create_Room_Create").prop('disabled', true);
         var roomName = $("#TB_Create_Room_Name").val();
-        var roomPW = $("#TB_Create_Room_PW").val();
+        var roomPW = $("#TB_Create_Room_PW").val() === "" ? RoomDafaultPassword : $("#TB_Create_Room_PW").val();
         var description = $("#TB_Create_Room_Description").val() === "" ? "empty" : $("#TB_Create_Room_Description").val();
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_CREATE_ROOM;
@@ -509,7 +509,7 @@ GameClient.prototype = {
     },
     JoinRoom: function (roomNum, roomName)
     {
-        var roomPW = $("#TB_ROOM_" + roomNum + "_PW").val();
+        var roomPW = $("#TB_ROOM_" + roomNum + "_PW").val() === "" ? RoomDafaultPassword : $("#TB_ROOM_" + roomNum + "_PW").val();
         //Join room
         var newMsg = new Message();
         newMsg.Action = ServerAction.PLSV_JOIN_ROOM;

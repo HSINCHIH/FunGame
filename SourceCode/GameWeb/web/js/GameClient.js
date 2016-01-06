@@ -22,7 +22,6 @@ GameClient.prototype = {
     m_CardCount: 18,
     m_AutoIndex: 0,
     m_AutoHandle: null,
-    m_GameStart: true,
     m_NotifyQueue: null,
     m_StepQueue: null,
     m_RecvSteps: null,
@@ -220,8 +219,11 @@ GameClient.prototype = {
                         console.log(recvMsg.GetString());
                         return;
                     }
+                    if ($('#DLG_Game_Result').data('Open') === 1)
+                    {
+                        return;
+                    }
                     this.OpenGameResultDialog(recvMsg.Args[1] === this.m_PlayerNum);
-                    this.m_GameStart = false;
                 }
                 break;
             case ServerAction.SVPL_RESUME_GAME:
@@ -550,7 +552,6 @@ GameClient.prototype = {
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('-webkit-transform', 'rotatey(0deg)');
                             $(StringFormat("#card_{0}", DigitFormat(i, 2))).closest('.card').css('transform', 'rotatey(0deg)');
                         }
-                        self.m_GameStart = true;
                         //self.m_AutoHandle = setInterval(BindWrapper(self, self.AutoPlay), self.m_ClickInterval + 100);
                     }, 5000);
                 });
@@ -707,6 +708,7 @@ GameClient.prototype = {
         $("#IMG_Game_Result").css({height: "1%", width: "1%"});
         $("#DLG_Game_Result").modal("toggle");
         $("#IMG_Game_Result").animate({height: "50%", width: "50%"}, 500);
+        $("#DLG_Game_Result").data("Open", 1);
     },
     OpenAboutDialog: function ()
     {
@@ -719,9 +721,9 @@ GameClient.prototype = {
             return;
         }
         var cardsArray = this.GetUnSelectCards();
-        if (cardsArray.length === 0 || !this.m_GameStart)
+        if (cardsArray.length === 0)
         {
-            //clearInterval(this.m_AutoHandle);
+            clearInterval(this.m_AutoHandle);
             return;
         }
         var index = Math.floor(Math.random() * cardsArray.length);
@@ -806,5 +808,11 @@ GameClient.prototype = {
         this.Connect();
         $("#DIV_Version").append('<p class="text-right">Version : <strong>' + Version + '</strong></p>');
         this.m_StopReadQueue = setInterval(BindWrapper(this, this.ReadStepQueue), 300);
+        $('#DLG_Game_Result').on('shown.bs.modal', function () {
+            $(this).data('Open', 1);
+        });
+        $('#DLG_Game_Result').on('hidden.bs.modal', function () {
+            $(this).data('Open', 0);
+        });
     }
 };

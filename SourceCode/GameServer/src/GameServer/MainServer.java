@@ -610,6 +610,27 @@ public class MainServer implements IReceiveMsgCallBack {
             m_Log.Writeln(String.format("PLSV_OPERATOR_recv, UUID : %s, Step : %s", uuid, step));
             BaseMessage newMsg = new BaseMessage();
             newMsg.Action = ServerAction.SVPL_OPERATOR;
+            String sql = String.format("SELECT `RoomState` FROM `Room` WHERE `RoomNum` = %s;", roomNum);
+            List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+            String roomState = rs.get(0)[0];
+            if (roomState.equals("3")) {
+                //Game already finish
+                newMsg.Args.add("0");//Fail
+                newMsg.Args.add(uuid);
+                newMsg.Args.add(step);
+                m_LocalControlEP.Send(newMsg, ep);
+                m_Log.Writeln(String.format("Game over, RoomNum  : %s", roomNum));
+                //Send winner to user
+                sql = String.format("SELECT `Winner` FROM `RoomPlayer` WHERE RoomNum = %s AND `Winner` > 0;", roomNum);
+                rs = m_DBHandler.ExecuteQuery(sql);
+                String winner = rs.get(0)[0];
+                newMsg = new BaseMessage();
+                newMsg.Action = ServerAction.SVPL_WINNER;
+                newMsg.Args.add(roomNum);
+                newMsg.Args.add(winner);
+                m_LocalControlEP.Send(newMsg, ep);
+                return;
+            }
             PlayerData playerData = null;
             if (!m_PlayerData.containsKey(playerNum)) {
                 playerData = new PlayerData();
@@ -633,7 +654,7 @@ public class MainServer implements IReceiveMsgCallBack {
                 m_Log.Writeln(String.format("%s fail, Step : %s", "LegalStep", step));
                 return;
             }
-            String sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Step`, `State`, `RecordTime`) VALUES (%s, %s, '%s', '%s', %s);", roomNum, playerNum, step, playerData.CardStateToString(), "CURRENT_TIMESTAMP()");
+            sql = String.format("INSERT INTO `Record` (`RoomNum`, `PlayerNum`, `Step`, `State`, `RecordTime`) VALUES (%s, %s, '%s', '%s', %s);", roomNum, playerNum, step, playerData.CardStateToString(), "CURRENT_TIMESTAMP()");
             if (m_DBHandler.Execute(sql) <= 0) {
                 //Update fail
                 newMsg.Args.add("0");//Fail
@@ -671,7 +692,7 @@ public class MainServer implements IReceiveMsgCallBack {
             if (totalOpen == 18) {
                 //Check winner
                 sql = String.format("SELECT PlayerNum FROM `RoomPlayer` WHERE `RoomNum` = %s AND `Winner` = %d;", roomNum, 1);
-                List<String[]> rs = m_DBHandler.ExecuteQuery(sql);
+               rs = m_DBHandler.ExecuteQuery(sql);
                 if (rs.size() > 0) {
                     return;
                 }

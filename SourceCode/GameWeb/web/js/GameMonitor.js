@@ -292,7 +292,7 @@ GameMonitor.prototype = {
             var state = args[i + 3];
             var cardState = eval(state);
             $("#DIV_Game").append('<div id="' + StringFormat("DIV_{0}", playerNum) + '" class="col-md-6 col-xs-6"></div>');
-            $("#DIV_" + playerNum).css({"border": "1px solid #F0F0F0"});
+            $("#DIV_" + playerNum).css({"border": "5px solid #F0F0F0"});
             $("#DIV_" + playerNum).append('<div class="col-md-12 col-xs-12">Player : ' + playerName + '</div>');
             for (var j = 0; j < cardState.length; j++)
             {

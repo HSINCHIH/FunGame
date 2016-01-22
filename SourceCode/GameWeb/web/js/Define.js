@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-var Version = "0.0.0.3";
+var Version = "0.0.0.4";
 var GameServerIP = "127.0.0.1";
 var GameServerPort = 99;
 var RoomDafaultPassword = "password";
